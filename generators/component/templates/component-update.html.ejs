@@ -1,0 +1,64 @@
+<form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+<h2 mat-dialog-title>Update <%= entityName %></h2>
+<mat-dialog-content class="mat-typography">
+<div fxLayout="column" fxLayoutGap="1rem">
+    <%_ fields.forEach(function(f){ _%>
+        <%_ if (f.name != 'id' && f.relation == undefined) { _%> 
+                <div class="p-field p-col-12 p-md-4" fxFlex>
+                <span class="p-float-label">
+                    <%_ if (f.dbType.includes('string')) { _%> 
+                      <input id="<%= f.name %>" type="text" pInputText formControlName="<%= f.name %>"> 
+                    <%_ } _%>
+                    <%_ if (f.dbType.includes('text')) { _%> 
+                      <textarea id="<%= f.name %>" formControlName="<%= f.name %>" [rows]="5" [cols]="30" pInputTextarea autoResize="autoResize"></textarea>
+                    <%_ } _%>
+                    <%_ if (f.dbType.includes('integer')) { _%> 
+                      <p-inputNumber id="<%= f.name %>" formControlName="<%= f.name %>"></p-inputNumber>
+                    <%_ } _%>
+                    <%_ if (f.dbType.includes('decimal') || f.dbType.includes('double') || f.dbType.includes('float')) { _%> 
+                      <p-inputNumber id="<%= f.name %>" formControlName="<%= f.name %>" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2"></p-inputNumber>
+                    <%_ } _%>
+                    <%_ if (f.dbType.includes('date')) { _%> 
+                      <p-calendar id="<%= f.name %>" formControlName="<%= f.name %>"></p-calendar>
+                    <%_ } _%>
+                    <%_ if (f.validations !== undefined) { _%>
+                        <span *ngIf="editForm.get('<%= f.name %>')!.invalid && (editForm.get('<%= f.name %>')!.dirty || editForm.get('<%= f.name %>')!.touched)">
+                        <%_  if(f.validations.includes('required')){_%>
+                            <small class="p-error" *ngIf="editForm.get('<%= f.name %>')?.errors?.required"><%= f.header %> is required.</small>
+                        <%_ } _%>
+                        </span>
+                    <%_ } _%>
+                    <label for="<%= f.name %>"><%= f.header %> </label>
+                </span>
+                </div>
+        <%_ } _%>
+    <%_ }); _%>
+    <%_ relations.forEach(function(r){ _%>
+                <div class="p-field p-col-12 p-md-4">
+                <span class="p-float-label">
+                    <%_ if (r.type === 'mt1') { _%> 
+                      <p-dropdown inputId="<%= r.name %>" optionValue="id" optionLabel="name" 
+                        [autoDisplayFirst]="false" 
+                        filtered="true" 
+                        [options]="<%= r.rlCamelPlural %> " 
+                        formControlName="<%= r.name %>"></p-dropdown>
+                    <%_ } _%>
+                    <label for="<%= r.name %>"><%= r.header %> </label>
+                    <%_ if (r.validations !== undefined) { _%>
+                        <span *ngIf="editForm.get('<%= r.name %>')!.invalid && (editForm.get('<%= r.name %>')!.dirty || editForm.get('<%= r.name %>')!.touched)">
+                        <%_  if(r.validations.includes('required')){_%>
+                            <small class="p-error" *ngIf="editForm.get('<%= r.name %>')?.errors?.required"><%= r.header %> is required.</small>
+                        <%_ } _%>
+                        </span>
+                    <%_ } _%>
+                </span>
+                </div>
+    <%_ }); _%>
+</div>
+<mat-dialog-actions align="end">
+  <button type="button" mat-button mat-dialog-close>Cancel</button>
+  <button mat-raised-button color="primary" type="submit" cdkFocusInitial>
+    Save
+  </button>
+</mat-dialog-actions>
+</form>

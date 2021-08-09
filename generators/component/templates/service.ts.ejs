@@ -1,0 +1,36 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+import { createRequestOption } from '../../utils/request-util';
+import { CustomResponse } from '../../utils/custom-response';
+import { <%= capEntityName %> } from './<%= snakeEntityName %>.model';
+
+@Injectable({ providedIn: 'root' })
+export class <%= capEntityName %>Service {
+  public resourceUrl = 'api/<%= snakeEntityName %>';
+
+  constructor(protected http: HttpClient) {}
+
+  create(<%= camelEntityName %>: <%= capEntityName %>): Observable<CustomResponse<<%= capEntityName %>>> {
+    return this.http.post<CustomResponse<<%= capEntityName %>>>(this.resourceUrl, <%= camelEntityName %>);
+  }
+
+  update(<%= camelEntityName %>: <%= capEntityName %>): Observable<CustomResponse<<%= capEntityName %>>> {
+    return this.http.put<CustomResponse<<%= capEntityName %>>>(`${this.resourceUrl}/${<%= camelEntityName %>.id}`, <%= camelEntityName %>);
+  }
+
+  find(id: number): Observable<CustomResponse<<%= capEntityName %>>> {
+    return this.http.get<CustomResponse<<%= capEntityName %>>>(`${this.resourceUrl}/${id}`);
+  }
+
+  query(req?: any): Observable<CustomResponse<<%= capEntityName %>[]>> {
+    const options = createRequestOption(req);
+    return this.http.get<CustomResponse<<%= capEntityName %>[]>>(this.resourceUrl, { params: options });
+  }
+
+  delete(id: number): Observable<CustomResponse<null>> {
+    return this.http.delete<CustomResponse<null>>(`${this.resourceUrl}/${id}`);
+  }
+
+}

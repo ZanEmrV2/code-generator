@@ -1,0 +1,13 @@
+enter entity name: 
+select parent folder :setup
+
+enter field path;
+
+generate module: parent/entity-name module (command ng g m setup/FacilityType --routing)
+1. const parentFolder: get parent folder in lower case 
+2. const capEntityName: get entity Capililize name
+3. const snakeEntityName: convert capitalized entity name to dash(-) snake case "FacilityType".replace(/[A-Z]/g, (letter, index) => { return index == 0 ? letter.toLowerCase() : '-'+ letter.toLowerCase();});
+4. Create module file with name (parentFolder+'/'+snakeEntityName+'.module.ts') from module template with 
+    params {entityName:capEntityName }
+
+generate model: parent/entity-name/

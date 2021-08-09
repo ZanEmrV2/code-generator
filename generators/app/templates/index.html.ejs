@@ -1,0 +1,14 @@
+<html>
+  <head>
+    <title><%= title %></title>
+  </head>
+  <body>
+    <table>
+      <tr>
+        <%_ columns.forEach(function(c){ _%>
+        <td><%= c.name %></td>
+        <%_ }); _%>
+      </tr>
+    </table>
+  </body>
+</html>

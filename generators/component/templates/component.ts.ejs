@@ -1,0 +1,141 @@
+import { Component, OnInit } from '@angular/core';
+import { HttpHeaders } from '@angular/common/http';
+import { ActivatedRoute, Router } from '@angular/router';
+import { combineLatest } from 'rxjs';
+import { ConfirmationService } from 'primeng/api';
+import { DialogService } from 'primeng/dynamicdialog';
+
+import { CustomResponse } from '../../utils/custom-response';
+import { <%= capEntityName %> } from './<%= snakeEntityName %>.model';
+
+import { ITEMS_PER_PAGE } from '../../config/pagination.constants';
+import { <%= capEntityName %>Service } from './<%= snakeEntityName %>.service';
+import { <%= capEntityName %>UpdateComponent } from './update/<%= snakeEntityName %>-update.component';
+
+@Component({
+  selector: 'app-<%= snakeEntityName %>',
+  templateUrl: './<%= snakeEntityName %>.component.html',
+  providers: [ConfirmationService, DialogService],
+})
+export class <%= capEntityName %>Component implements OnInit {
+  <%= camelPluralEntityName %>?: <%= capEntityName %>[] = [];
+  cols = [
+  <%_ fields.forEach(function(f){ _%>
+    <%_ if (f.name != 'id') { _%> 
+      {field: '<%= f.name %>', header:'<%= f.header %>'  },
+    <%_ } _%>
+  <%_ }); _%>
+  ]
+  isLoading = false;
+  totalItems = 0;
+  itemsPerPage = ITEMS_PER_PAGE;
+  page?: number;
+  predicate!: string;
+  ascending!: boolean;
+
+  constructor(
+    protected <%= camelEntityName %>Service: <%= capEntityName %>Service,
+    protected activatedRoute: ActivatedRoute,
+    protected router: Router,
+    protected confirmationService: ConfirmationService,
+    protected dialogService: DialogService
+  ) {}
+
+  loadPage(page?: number, dontNavigate?: boolean): void {
+    this.isLoading = true;
+    const pageToLoad: number = page ?? this.page ?? 1;
+
+    this.<%= camelEntityName %>Service
+      .query({
+        page: pageToLoad,
+        size: this.itemsPerPage,
+        sort: this.sort(),
+      })
+      .subscribe(
+        (res: CustomResponse<<%= capEntityName %>[]>) => {
+          this.isLoading = false;
+          this.onSuccess(res, pageToLoad, !dontNavigate);
+        },
+        () => {
+          this.isLoading = false;
+          this.onError();
+        }
+      );
+  }
+
+  ngOnInit(): void {
+    this.handleNavigation();
+  }
+
+  trackId(index: number, item: <%= capEntityName %>): number {
+    return item.id!;
+  }
+
+  createOrUpdate(<%= camelEntityName %>?: <%= capEntityName %>): void {
+    const data:<%= capEntityName %>  = <%= camelEntityName %> ?? {... new <%= capEntityName %>() };
+    const dialogRef = this.dialogService.open(<%= capEntityName %>UpdateComponent, {
+      header: <%= camelEntityName %>?.id ? 'Update <%= capEntityName %>' : 'Create <%= capEntityName %>' ,
+      width: '70%',
+      data: data
+  });
+
+  dialogRef.onClose.subscribe((result) => {
+      if (result) {
+        this.loadPage(this.page)
+      }
+  });
+  }
+
+  delete(<%= camelEntityName %>: <%= capEntityName %>): void {
+    this.confirmationService.confirm({
+      message: 'Are you sure that you want to delete this action <%= capEntityName %>?',
+      accept: () => {
+          this.<%= camelEntityName %>Service.delete(<%= camelEntityName %>.id!).subscribe(resp =>  {
+            this.loadPage(this.page)
+          })
+      }
+  });
+  }
+
+  protected sort(): string[] {
+    const result = [this.predicate + ',' + (this.ascending ? 'asc' : 'desc')];
+    if (this.predicate !== 'id') {
+      result.push('id');
+    }
+    return result;
+  }
+
+  protected handleNavigation(): void {
+    combineLatest([this.activatedRoute.data, this.activatedRoute.queryParamMap]).subscribe(([data, params]) => {
+      const page = params.get('page');
+      const pageNumber = page !== null ? +page : 1;
+      const sort = (params.get('sort') ?? data['defaultSort']).split(',');
+      const predicate = sort[0];
+      const ascending = sort[1] === 'asc';
+      if (pageNumber !== this.page || predicate !== this.predicate || ascending !== this.ascending) {
+        this.predicate = predicate;
+        this.ascending = ascending;
+        this.loadPage(pageNumber, true);
+      }
+    });
+  }
+
+  protected onSuccess(resp: CustomResponse<<%= capEntityName %>[]> | null, page: number, navigate: boolean): void {
+    this.totalItems = resp?.total!;
+    this.page = page;
+    if (navigate) {
+      this.router.navigate(['/<%= snakeEntityName %>'], {
+        queryParams: {
+          page: this.page,
+          size: this.itemsPerPage,
+          sort: this.predicate + ',' + (this.ascending ? 'asc' : 'desc'),
+        },
+      });
+    }
+    this.<%= camelPluralEntityName %> = resp?.data ?? [];
+  }
+
+  protected onError(): void {
+    //this.ngbPaginationPage = this.page ?? 1;
+  }
+}

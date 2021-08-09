@@ -1,0 +1,18 @@
+import { NgModule } from '@angular/core'; 
+import { CommonModule } from'@angular/common'; 
+import { <%= capEntityName%>RoutingModule } from './<%=snakeEntityName%>-routing.module'; 
+
+import { SharedModule } from '../../shared/shared.module';
+import { <%= capEntityName %>Component } from './<%= snakeEntityName %>.component';
+import { <%= capEntityName %>UpdateComponent } from './update/<%= snakeEntityName %>-update.component';
+
+@NgModule({ 
+    imports:[SharedModule, CommonModule, <%= capEntityName%>RoutingModule ],
+    declarations: [
+    <%= capEntityName %>Component,
+    <%= capEntityName %>UpdateComponent
+    ], 
+    entryComponents: [<%= capEntityName %>UpdateComponent],
+
+}) 
+export class <%=capEntityName%>Module { }

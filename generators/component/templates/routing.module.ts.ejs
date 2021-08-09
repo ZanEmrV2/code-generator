@@ -1,0 +1,20 @@
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { <%= capEntityName %>Component } from "./<%= snakeEntityName %>.component";
+
+
+const routes: Routes = [ 
+{
+  path: '',
+  component: <%= capEntityName %>Component,
+  data: {
+    defaultSort: 'id,asc',
+  },
+  //canActivate: [UserRouteAccessService],
+}];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class <%=capEntityName%>RoutingModule { }

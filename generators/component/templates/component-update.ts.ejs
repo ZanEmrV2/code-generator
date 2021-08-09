@@ -1,0 +1,108 @@
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, Validators } from '@angular/forms';
+import { Observable } from 'rxjs';
+import { finalize } from 'rxjs/operators';
+
+import {DynamicDialogRef} from 'primeng/dynamicdialog';
+import {DynamicDialogConfig} from 'primeng/dynamicdialog';
+
+import { CustomResponse } from '../../../utils/custom-response';
+
+<%_ relations.forEach(function(r){ _%>
+import { <%= r.rlCap %> } from 'app/setup/<%= r.rlSnake %>.model';  
+import { <%= r.rlCap %>Service } from 'app/setup/<%= r.rlSnake %>.service';  
+<%_ }); _%>
+
+import { <%= capEntityName %> } from '../<%= snakeEntityName %>.model';
+import { <%= capEntityName %>Service } from '../<%= snakeEntityName %>.service';
+
+@Component({
+  selector: 'app-<%= snakeEntityName %>-update',
+  templateUrl: './<%= snakeEntityName %>-update.component.html',
+})
+export class <%= capEntityName %>UpdateComponent implements OnInit {
+  
+  isSaving = false;
+  <%_ relations.forEach(function(r){ _%>
+     <%= r.rlCamelPlural %>: <%= r.rlCap %>[] = [];  
+  <%_ }); _%>
+
+  editForm = this.fb.group({
+    <%_ fields.forEach(function(f){ _%>
+      <%=f.name %>: [null, 
+      <%_ if (f.validations !== undefined) { _%>
+        [
+          <%_  if(f.validations.includes('required')){_%>Validators.required,<%_}_%> 
+        ]
+        <%_}_%>],
+    <%_ }); _%>
+  });
+
+  constructor(    
+    protected <%= camelEntityName %>Service: <%= capEntityName %>Service,
+    <%_ relations.forEach(function(r){ _%>
+      protected <%= r.rlCamel %>Service: <%= r.rlCap %>Service,
+    <%_ }); _%>
+    public dialogRef: DynamicDialogRef, 
+    public config: DynamicDialogConfig, 
+    protected fb: FormBuilder) {}
+
+  ngOnInit(): void {
+    <%_ relations.forEach(function(r){ _%>
+      this.<%= r.rlCamel %>Service.query().subscribe((resp: CustomResponse<<%= r.rlCap %>[]>) => this.<%= r.rlCamelPlural %>=resp.data)
+    <%_ }); _%>
+    this.updateForm(this.config.data);
+  }
+
+  close(): void {
+    this.dialogRef.close();
+  }
+
+  save(): void {
+    this.isSaving = true;
+    const <%= camelEntityName %> = this.createFromForm();
+    if (<%= camelEntityName %>.id !== undefined) {
+      this.subscribeToSaveResponse(this.<%= camelEntityName %>Service.update(<%= camelEntityName %>));
+    } else {
+      this.subscribeToSaveResponse(this.<%= camelEntityName %>Service.create(<%= camelEntityName %>));
+    }
+  }
+
+  protected subscribeToSaveResponse(result: Observable<CustomResponse<<%= capEntityName %>>>): void {
+    result.pipe(finalize(() => this.onSaveFinalize())).subscribe(
+      () => this.onSaveSuccess(),
+      (error) => this.onSaveError(error)
+    );
+  }
+
+  protected onSaveSuccess(): void {
+    this.dialogRef.close(true);
+  }
+
+  protected onSaveError(error: any): void {
+    // Api for inheritance.
+    console.log(error)
+  }
+
+  protected onSaveFinalize(): void {
+    this.isSaving = false;
+  }
+
+  protected updateForm(<%= camelEntityName %>:  <%= capEntityName %>): void {
+    this.editForm.patchValue({
+      <%_ fields.forEach(function(f){ _%>
+        <%=f.name %>: <%= camelEntityName %>.<%=f.name %>,
+      <%_ }); _%>
+
+    });
+  }
+
+  protected createFromForm():  <%= capEntityName %> {
+    return {
+      ...new  <%= capEntityName %>(),
+      <%_ fields.forEach(function(f){ _%>
+        <%=f.name %>: this.editForm.get(['<%=f.name %>'])!.value,
+      <%_ }); _%>
+    };
+  }
+}

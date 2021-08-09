@@ -1,0 +1,38 @@
+<div class="content" fxLayout="column" fxLayoutGap="1.5rem">
+    <mat-card>
+
+    </mat-card>
+
+    <mat-card>
+        <mat-card-header>
+            <mat-card-title><%= entityName %></mat-card-title>
+            <span fxFlex></span>
+            <button color="primary" mat-raised-button (click)="createOrUpdate()">Create</button>
+        </mat-card-header>
+        <p-table [columns]="cols" [value]="<%= camelPluralEntityName %>" styleClass="p-datatable-responsive">
+            <ng-template pTemplate="header" let-columns>
+                <tr>
+                    <th *ngFor="let col of columns">
+                        {{col.header}}
+                    </th>
+                    <th>Actions</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-rowData let-columns="columns">
+                <tr>
+                    <td *ngFor="let col of columns">
+                        {{rowData[col.field]}}
+                    </td>
+                    <td class="fit">
+                        <button mat-icon-button (click)="createOrUpdate(rowData)">
+                         <mat-icon>edit</mat-icon>
+                        </button>
+                        <button mat-icon-button (click)="delete(rowData)">
+                         <mat-icon>delete</mat-icon>
+                        </button>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </mat-card>
+</div>

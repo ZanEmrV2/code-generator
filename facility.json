@@ -1,0 +1,27 @@
+[
+    {
+        "name": "id",
+        "dbType": "increments",
+        "validations": "",
+        "searchable": false,
+        "fillable": false,
+        "primary": true
+    },
+    {
+        "name": "name",
+        "dbType": "string",
+        "validations": "required",
+        "searchable": true
+    },
+    {
+        "name": "code",
+        "dbType": "string,50",
+        "searchable": true
+    },
+
+    {
+        "name": "facility_type_id",
+        "dbType": "integer:unsigned:default,0:foreign,facility_types,id",
+        "relation": "mt1,FacilityType,facility_type_id,id"
+    }
+]
