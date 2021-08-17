@@ -1,13 +1,8 @@
-<div class="dialog-content">
-  <form
-    name="editForm"
-    role="form"
-    novalidate
-    (ngSubmit)="save()"
-    [formGroup]="editForm"
-  >
-    <div fxLayout="column" fxLayoutGap="1rem">
-      <%_ fields.forEach(function(f){ _%>
+<form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+<h2 mat-dialog-title>Update <%= entityName %></h2>
+<mat-dialog-content class="mat-typography">
+<div fxLayout="column" fxLayoutGap="1rem">
+    <%_ fields.forEach(function(f){ _%>
         <%_ if (f.name != 'id' && f.relation == undefined) { _%> 
                 <div class="p-field p-col-12 p-md-4" fxFlex>
                 <span class="p-float-label">
@@ -59,16 +54,12 @@
                 </span>
                 </div>
     <%_ }); _%>
-      <div fxLayout="row" fxLayoutGap="0.75rem">
-        <span fxFlex></span>
-        <button
-          class="p-button-raised"
-          icon="pi pi-check"
-          label="Save"
-          pButton
-          type="submit"
-        ></button>
-      </div>
-    </div>
-  </form>
 </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button type="button" mat-button mat-dialog-close>Cancel</button>
+  <button mat-raised-button color="primary" type="submit" cdkFocusInitial>
+    Save
+  </button>
+</mat-dialog-actions>
+</form>

@@ -1,37 +1,34 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+
+import {DynamicDialogRef} from 'primeng/dynamicdialog';
+import {DynamicDialogConfig} from 'primeng/dynamicdialog';
 
 import { CustomResponse } from '../../../utils/custom-response';
 
 <%_ relations.forEach(function(r){ _%>
-  import { <%= r.rlCap %> } from 'app/setup/<%= r.rlSnake %>.model';  
-  import { <%= r.rlCap %>Service } from 'app/setup/<%= r.rlSnake %>.service';  
+import { <%= r.rlCap %> } from 'app/setup/<%= r.rlSnake %>.model';  
+import { <%= r.rlCap %>Service } from 'app/setup/<%= r.rlSnake %>.service';  
 <%_ }); _%>
+
 import { <%= capEntityName %> } from '../<%= snakeEntityName %>.model';
 import { <%= capEntityName %>Service } from '../<%= snakeEntityName %>.service';
-import { ToastService } from 'src/app/shared/toast.service';
 
 @Component({
   selector: 'app-<%= snakeEntityName %>-update',
   templateUrl: './<%= snakeEntityName %>-update.component.html',
 })
 export class <%= capEntityName %>UpdateComponent implements OnInit {
+  
   isSaving = false;
-  formError = false;
-  errors = [];
-
   <%_ relations.forEach(function(r){ _%>
-    <%= r.rlCamelPlural %>: <%= r.rlCap %>[] = [];  
+     <%= r.rlCamelPlural %>: <%= r.rlCap %>[] = [];  
   <%_ }); _%>
 
-  /**
-   * Declare form
-   */
   editForm = this.fb.group({
-   <%_ fields.forEach(function(f){ _%>
+    <%_ fields.forEach(function(f){ _%>
       <%=f.name %>: [null, 
       <%_ if (f.validations !== undefined) { _%>
         [
@@ -41,80 +38,57 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
     <%_ }); _%>
   });
 
-  constructor(
+  constructor(    
     protected <%= camelEntityName %>Service: <%= capEntityName %>Service,
     <%_ relations.forEach(function(r){ _%>
       protected <%= r.rlCamel %>Service: <%= r.rlCap %>Service,
     <%_ }); _%>
-    public dialogRef: DynamicDialogRef,
-    public dialogConfig: DynamicDialogConfig,
-    protected fb: FormBuilder,
-    private toastService: ToastService
-  ) {}
+    public dialogRef: DynamicDialogRef, 
+    public config: DynamicDialogConfig, 
+    protected fb: FormBuilder) {}
 
   ngOnInit(): void {
     <%_ relations.forEach(function(r){ _%>
       this.<%= r.rlCamel %>Service.query().subscribe((resp: CustomResponse<<%= r.rlCap %>[]>) => this.<%= r.rlCamelPlural %>=resp.data)
     <%_ }); _%>
-    this.updateForm(this.dialogConfig.data); //Initilize form with data from dialog
+    this.updateForm(this.config.data);
   }
 
-  /**
-   * When form is valid Create <%= capEntityName %> or Update Facilitiy type if exist else set form has error and return
-   * @returns
-   */
+  close(): void {
+    this.dialogRef.close();
+  }
+
   save(): void {
-    if (this.editForm.invalid) {
-      this.formError = true;
-      return;
-    }
     this.isSaving = true;
     const <%= camelEntityName %> = this.createFromForm();
     if (<%= camelEntityName %>.id !== undefined) {
-      this.subscribeToSaveResponse(
-        this.<%= camelEntityName %>Service.update(<%= camelEntityName %>)
-      );
+      this.subscribeToSaveResponse(this.<%= camelEntityName %>Service.update(<%= camelEntityName %>));
     } else {
-      this.subscribeToSaveResponse(
-        this.<%= camelEntityName %>Service.create(<%= camelEntityName %>)
-      );
+      this.subscribeToSaveResponse(this.<%= camelEntityName %>Service.create(<%= camelEntityName %>));
     }
   }
 
-  protected subscribeToSaveResponse(
-    result: Observable<CustomResponse<<%= capEntityName %>>>
-  ): void {
+  protected subscribeToSaveResponse(result: Observable<CustomResponse<<%= capEntityName %>>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe(
-      (result) => this.onSaveSuccess(result),
+      () => this.onSaveSuccess(),
       (error) => this.onSaveError(error)
     );
   }
 
-  /**
-   * When save successfully close dialog and dispaly info message
-   * @param result
-   */
-  protected onSaveSuccess(result: any): void {
-    this.toastService.info(result.message);
+  protected onSaveSuccess(): void {
     this.dialogRef.close(true);
   }
 
-  /**
-   * Error handiling specific to this component
-   * Note; general error handleing is done by ErrorInterceptor
-   * @param error
-   */
-  protected onSaveError(error: any): void {}
+  protected onSaveError(error: any): void {
+    // Api for inheritance.
+    console.log(error)
+  }
 
   protected onSaveFinalize(): void {
     this.isSaving = false;
   }
 
-  /**
-   * Set/Initialize form values
-   * @param <%= camelEntityName %>
-   */
-  protected updateForm(<%= camelEntityName %>: <%= capEntityName %>): void {
+  protected updateForm(<%= camelEntityName %>:  <%= capEntityName %>): void {
     this.editForm.patchValue({
       <%_ fields.forEach(function(f){ _%>
         <%=f.name %>: <%= camelEntityName %>.<%=f.name %>,
@@ -122,11 +96,7 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
     });
   }
 
-  /**
-   * Return form values as object of type <%= capEntityName %>
-   * @returns <%= capEntityName %>
-   */
-  protected createFromForm(): <%= capEntityName %> {
+  protected createFromForm():  <%= capEntityName %> {
     return {
       ...new  <%= capEntityName %>(),
       <%_ fields.forEach(function(f){ _%>
