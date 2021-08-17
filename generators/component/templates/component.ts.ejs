@@ -12,8 +12,8 @@ import {
   PER_PAGE_OPTIONS,
 } from '../../config/pagination.constants';
 <%_ relations.forEach(function(r){ _%>
-  import { <%= r.rlCap %> } from 'app/setup/<%= r.rlSnake %>.model';  
-  import { <%= r.rlCap %>Service } from 'app/setup/<%= r.rlSnake %>.service';  
+  import { <%= r.rlCap %> } from 'src/app/setup/<%= r.rlSnake %>/<%= r.rlSnake %>.model';  
+  import { <%= r.rlCap %>Service } from 'src/app/setup/<%= r.rlSnake %>/<%= r.rlSnake %>.service';  
 <%_ }); _%>
 import { <%= capEntityName %>Service } from './<%= snakeEntityName %>.service';
 import { <%= capEntityName %>UpdateComponent } from './update/<%= snakeEntityName %>-update.component';
@@ -28,7 +28,7 @@ import { ToastService } from 'src/app/shared/toast.service';
 export class <%= capEntityName %>Component implements OnInit {
   <%= camelPluralEntityName %>?: <%= capEntityName %>[] = [];
   <%_ relations.forEach(function(r){ _%>
-    <%= r.rlCamelPlural %>: <%= r.rlCap %>[] = [];  
+    <%= r.rlCamelPlural %>?: <%= r.rlCap %>[] = [];  
   <%_ }); _%>
   cols = [
   <%_ fields.forEach(function(f){ _%>

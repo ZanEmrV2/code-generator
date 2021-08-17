@@ -45,11 +45,9 @@
             <%_ if (r.type === 'mt1') { _%> 
               <p-dropdown id="<%= r.name %>" optionValue="id" optionLabel="name" 
                 [autoDisplayFirst]="false" 
-                filtered="true" 
-                optionValue="id"
-                optionLabel="name"
                 [showClear]="true"
-                [options]="<%= r.rlCamelPlural %> " 
+                [filter]="true" 
+                [options]="<%= r.rlCamelPlural %>!" 
                 [(ngModel)]="filter['<%= r.name %>']"
                 ></p-dropdown>
             <%_ } _%>

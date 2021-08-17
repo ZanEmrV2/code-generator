@@ -54,12 +54,15 @@ module.exports = class extends Generator {
   fieldPath;
   fields = [];
   relations = [];
+  rawRelations = [];
+  mandatory = [];
   parentFolder;
   capEntityName;
   snakeEntityName; //dashed(-) snake entity name
   camelEntityName;
   camelPluralEntityName;
   entityName;
+  resourcePath;
 
   constructor(args, opts) {
     super(args, opts);
@@ -70,12 +73,13 @@ module.exports = class extends Generator {
     await this._getEntityName();
     await this._getParentFolderName();
     await this._getFields();
+    await this._getMandator();
   }
 
   async _getEntityName() {
     //Read entities from
     const entityOptions = [];
-    fs.readdirSync('schema').forEach(file => {
+    fs.readdirSync('.entities').forEach(file => {
       entityOptions.push({
         name: file.replace('.json', ''),
         value: file,
@@ -130,21 +134,34 @@ module.exports = class extends Generator {
   }
 
   async _getFields() {
-    // this.path = await this.prompt([
-    //   {
-    //     type: 'input',
-    //     name: 'uri',
-    //     message: 'Please specify path containing FIELDS:',
-    //   },
-    // ]);
-    let data = await this.fs.readJSON(this.destinationPath('schema/' + this.entityNameInput.name));
+    let data = await this.fs.readJSON(this.destinationPath('.entities/' + this.entityNameInput.name));
     if (data == undefined) {
-      this.log('invalid path please try again');
-      await this._getFields();
+      this.log('invalid path ');
     } else {
-      this.fields = data;
+      this.fields = data.filter(f => {
+        return !f.name.includes('created') && !f.name.includes('updated') && f.dbType !== 'timestamp';
+      });
     }
-    this.log(this.fields);
+    this.rawRelations = this.fields.filter(f => f.relation != undefined);
+  }
+
+  async _getMandator() {
+    this.log(this.rawRelations);
+    const choices = this.rawRelations.map(r => {
+      return {
+        name: r.name.replace('_id', ''),
+        value: r.name,
+      };
+    });
+    this.log(choices);
+    this.mandatory = await this.prompt([
+      {
+        type: 'checkbox',
+        name: 'filters',
+        message: 'Select Mandatory Filters',
+        choices,
+      },
+    ]);
   }
 
   writing() {
@@ -168,6 +185,10 @@ module.exports = class extends Generator {
     this.snakeEntityName = this.capEntityName.replace(/[A-Z]/g, (letter, index) => {
       return index == 0 ? letter.toLowerCase() : '-' + letter.toLowerCase();
     });
+    const _resourcePath = this.capEntityName.replace(/[A-Z]/g, (letter, index) => {
+      return index == 0 ? letter.toLowerCase() : '_' + letter.toLowerCase();
+    });
+    this.resourcePath = pluralize(_resourcePath);
     this.fields = this.fields.map(f => {
       return {
         ...f,
@@ -175,11 +196,16 @@ module.exports = class extends Generator {
       };
     });
 
-    const relations = this.fields.filter(f => f.relation != undefined);
-    this.relations = relations.map(r => {
+    this.relations = this.rawRelations.map(r => {
       const props = r.relation.split(',');
       const type = props[0];
-      const rlCap = props[1];
+      let rlCap = '';
+      let n = r.name.replace('_id', '');
+      this.log(n);
+      let nArray = n.split('_');
+      this.log(nArray);
+      nArray.forEach(w => (rlCap = rlCap + w.charAt(0).toUpperCase() + w.slice(1)));
+      this.log(rlCap);
       const rlCamel = rlCap.charAt(0).toLowerCase() + rlCap.slice(1);
       const rlSnake = rlCap.replace(/[A-Z]/g, (letter, index) => {
         return index == 0 ? letter.toLowerCase() : '-' + letter.toLowerCase();
@@ -195,6 +221,7 @@ module.exports = class extends Generator {
         rlCamelPlural,
       };
     });
+    this.log(this.mandatory);
   }
 
   _generateModule() {
@@ -234,7 +261,12 @@ module.exports = class extends Generator {
     this.fs.copyTpl(
       this.templatePath('service.ts.ejs'),
       this.destinationPath(`src/app/${this.parentFolder}/${this.snakeEntityName}/${this.snakeEntityName}.service.ts`),
-      { capEntityName: this.capEntityName, snakeEntityName: this.snakeEntityName, camelEntityName: this.camelEntityName }
+      {
+        capEntityName: this.capEntityName,
+        snakeEntityName: this.snakeEntityName,
+        camelEntityName: this.camelEntityName,
+        resourcePath: this.resourcePath,
+      }
     );
   }
 
@@ -246,6 +278,7 @@ module.exports = class extends Generator {
         capEntityName: this.capEntityName,
         snakeEntityName: this.snakeEntityName,
         fields: this.fields,
+        relations: this.relations,
         camelEntityName: this.camelEntityName,
         camelPluralEntityName: this.camelPluralEntityName,
         entityName: this.entityName,
@@ -258,6 +291,7 @@ module.exports = class extends Generator {
         capEntityName: this.capEntityName,
         snakeEntityName: this.snakeEntityName,
         fields: this.fields,
+        relations: this.relations,
         camelEntityName: this.camelEntityName,
         camelPluralEntityName: this.camelPluralEntityName,
         entityName: this.entityName,
@@ -305,7 +339,7 @@ module.exports = class extends Generator {
           (m) => m.${this.capEntityName}Module
         ),
     },\n`;
-    if (!file.includes(route)) {
+    if (!file.includes(this.snakeEntityName)) {
       const insert = route + hook;
       this.fs.write(path, file.replace(hook, insert));
     } else {

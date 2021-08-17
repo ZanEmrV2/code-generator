@@ -7,8 +7,8 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CustomResponse } from '../../../utils/custom-response';
 
 <%_ relations.forEach(function(r){ _%>
-  import { <%= r.rlCap %> } from 'app/setup/<%= r.rlSnake %>.model';  
-  import { <%= r.rlCap %>Service } from 'app/setup/<%= r.rlSnake %>.service';  
+  import { <%= r.rlCap %> } from 'src/app/setup/<%= r.rlSnake %>/<%= r.rlSnake %>.model';  
+  import { <%= r.rlCap %>Service } from 'src/app/setup/<%= r.rlSnake %>/<%= r.rlSnake %>.service';  
 <%_ }); _%>
 import { <%= capEntityName %> } from '../<%= snakeEntityName %>.model';
 import { <%= capEntityName %>Service } from '../<%= snakeEntityName %>.service';
@@ -24,7 +24,7 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
   errors = [];
 
   <%_ relations.forEach(function(r){ _%>
-    <%= r.rlCamelPlural %>: <%= r.rlCap %>[] = [];  
+    <%= r.rlCamelPlural %>?: <%= r.rlCap %>[] = [];  
   <%_ }); _%>
 
   /**

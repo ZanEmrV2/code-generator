@@ -26,37 +26,40 @@
                     <%_ if (f.dbType.includes('date')) { _%> 
                       <p-calendar id="<%= f.name %>" formControlName="<%= f.name %>"></p-calendar>
                     <%_ } _%>
-                    <%_ if (f.validations !== undefined) { _%>
-                        <span *ngIf="editForm.get('<%= f.name %>')!.invalid && (editForm.get('<%= f.name %>')!.dirty || editForm.get('<%= f.name %>')!.touched)">
-                        <%_  if(f.validations.includes('required')){_%>
-                            <small class="p-error" *ngIf="editForm.get('<%= f.name %>')?.errors?.required"><%= f.header %> is required.</small>
-                        <%_ } _%>
-                        </span>
-                    <%_ } _%>
                     <label for="<%= f.name %>"><%= f.header %> </label>
                 </span>
+                <%_ if (f.validations !== undefined) { _%>
+                  <span *ngIf="editForm.get('<%= f.name %>')!.invalid && (editForm.get('<%= f.name %>')!.dirty || editForm.get('<%= f.name %>')!.touched || formError)">
+                  <%_  if(f.validations.includes('required')){_%>
+                      <small class="p-error" *ngIf="editForm.get('<%= f.name %>')?.errors?.required"><%= f.header %> is required.</small>
+                  <%_ } _%>
+                  </span>
+              <%_ } _%>
                 </div>
         <%_ } _%>
     <%_ }); _%>
     <%_ relations.forEach(function(r){ _%>
-                <div class="p-field">
+                <div class="p-field" fxFlex>
                 <span class="p-float-label">
                     <%_ if (r.type === 'mt1') { _%> 
                       <p-dropdown id="<%= r.name %>" optionValue="id" optionLabel="name" 
                         [autoDisplayFirst]="false" 
-                        filtered="true" 
-                        [options]="<%= r.rlCamelPlural %> " 
+                        [showClear]="true"
+                        [filter]="true"
+                        optionValue="id"
+                        optionLabel="name"
+                        [options]="<%= r.rlCamelPlural %>!" 
                         formControlName="<%= r.name %>"></p-dropdown>
                     <%_ } _%>
                     <label for="<%= r.name %>"><%= r.header %> </label>
-                    <%_ if (r.validations !== undefined) { _%>
-                        <span *ngIf="editForm.get('<%= r.name %>')!.invalid && (editForm.get('<%= r.name %>')!.dirty || editForm.get('<%= r.name %>')!.touched)">
-                        <%_  if(r.validations.includes('required')){_%>
-                            <small class="p-error" *ngIf="editForm.get('<%= r.name %>')?.errors?.required"><%= r.header %> is required.</small>
-                        <%_ } _%>
-                        </span>
-                    <%_ } _%>
                 </span>
+                <%_ if (r.validations !== undefined) { _%>
+                  <span *ngIf="editForm.get('<%= r.name %>')!.invalid && (editForm.get('<%= r.name %>')!.dirty || editForm.get('<%= r.name %>')!.touched || formError)">
+                  <%_  if(r.validations.includes('required')){_%>
+                      <small class="p-error" *ngIf="editForm.get('<%= r.name %>')?.errors?.required"><%= r.header %> is required.</small>
+                  <%_ } _%>
+                  </span>
+              <%_ } _%>
                 </div>
     <%_ }); _%>
       <div fxLayout="row" fxLayoutGap="0.75rem">

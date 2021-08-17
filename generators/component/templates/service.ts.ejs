@@ -8,7 +8,7 @@ import { <%= capEntityName %> } from './<%= snakeEntityName %>.model';
 
 @Injectable({ providedIn: 'root' })
 export class <%= capEntityName %>Service {
-  public resourceUrl = 'api/<%= snakeEntityName %>';
+  public resourceUrl = 'api/<%= resourcePath %>';
 
   constructor(protected http: HttpClient) {}
 
