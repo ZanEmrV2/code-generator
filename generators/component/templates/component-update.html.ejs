@@ -34,10 +34,10 @@
         <%_ } _%>
     <%_ }); _%>
     <%_ relations.forEach(function(r){ _%>
-                <div class="p-field p-col-12 p-md-4">
+                <div class="p-field">
                 <span class="p-float-label">
                     <%_ if (r.type === 'mt1') { _%> 
-                      <p-dropdown inputId="<%= r.name %>" optionValue="id" optionLabel="name" 
+                      <p-dropdown id="<%= r.name %>" optionValue="id" optionLabel="name" 
                         [autoDisplayFirst]="false" 
                         filtered="true" 
                         [options]="<%= r.rlCamelPlural %> " 
@@ -55,6 +55,7 @@
                 </div>
     <%_ }); _%>
 </div>
+</mat-dialog-content>
 <mat-dialog-actions align="end">
   <button type="button" mat-button mat-dialog-close>Cancel</button>
   <button mat-raised-button color="primary" type="submit" cdkFocusInitial>

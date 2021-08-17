@@ -3,6 +3,7 @@ const through = require('through2');
 var prettier = require('prettier');
 var pluralize = require('pluralize');
 var _ = require('lodash');
+const fs = require('fs');
 
 const prettierTransform = function (options, generator, ignoreErrors = false) {
   return through.obj((file, encoding, callback) => {
@@ -72,11 +73,22 @@ module.exports = class extends Generator {
   }
 
   async _getEntityName() {
+    //Read entities from
+    const entityOptions = [];
+    fs.readdirSync('schema').forEach(file => {
+      entityOptions.push({
+        name: file.replace('.json', ''),
+        value: file,
+      });
+    });
+    //If entityOptions empty exit
+
     this.entityNameInput = await this.prompt([
       {
-        type: 'input',
+        type: 'list',
         name: 'name',
-        message: 'What is the name of the ENTITY?',
+        message: 'Select entity?',
+        choices: entityOptions,
       },
     ]);
     if (this.entityNameInput.name === undefined) {
@@ -118,20 +130,21 @@ module.exports = class extends Generator {
   }
 
   async _getFields() {
-    this.path = await this.prompt([
-      {
-        type: 'input',
-        name: 'uri',
-        message: 'Please specify path containing FIELDS:',
-      },
-    ]);
-    let data = await this.fs.readJSON(this.destinationPath('.entities/' + this.path.uri));
+    // this.path = await this.prompt([
+    //   {
+    //     type: 'input',
+    //     name: 'uri',
+    //     message: 'Please specify path containing FIELDS:',
+    //   },
+    // ]);
+    let data = await this.fs.readJSON(this.destinationPath('schema/' + this.entityNameInput.name));
     if (data == undefined) {
       this.log('invalid path please try again');
       await this._getFields();
     } else {
       this.fields = data;
     }
+    this.log(this.fields);
   }
 
   writing() {
@@ -147,7 +160,7 @@ module.exports = class extends Generator {
 
   _init() {
     this.parentFolder = this.parentFolderInput.name.toLowerCase();
-    const e = this.entityNameInput.name;
+    const e = this.entityNameInput.name.replace('.json', '').replace('_', '').replace('-', '');
     this.capEntityName = e.charAt(0).toUpperCase() + e.slice(1);
     this.camelEntityName = this.capEntityName.charAt(0).toLowerCase() + e.slice(1);
     this.camelPluralEntityName = pluralize(this.camelEntityName);

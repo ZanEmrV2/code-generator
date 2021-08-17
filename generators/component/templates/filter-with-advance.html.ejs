@@ -1,0 +1,67 @@
+<mat-card>
+  <div fxLayout="column" fxLayoutGap="10px">
+    <div fxLayout="row" fxLayoutGap="10px">
+      <div class="p-field">
+        <span class="p-float-label p-input-icon-right">
+          <input
+            id="name"
+            type="text"
+            class="p-inputtext-sm"
+            pInputText
+            [(ngModel)]="filter['name']"
+          />
+          <label for="name">Name </label>
+          <i
+            class="pi pi-times"
+            (click)="filter['name'] = undefined; search()"
+          ></i>
+        </span>
+      </div>
+      <button mat-button (click)="extra.toggle()">show</button>
+    </div>
+    <mat-accordion class="mat-elevation-z0">
+      <mat-expansion-panel class="mat-elevation-z0" #extra>
+        <div fxLayout="row" fxLayoutGap="0.75rem">
+          <div class="p-field">
+            <span class="p-float-label p-input-icon-right">
+              <input
+                id="name"
+                type="text"
+                class="p-inputtext-sm"
+                pInputText
+                [(ngModel)]="filter['name']"
+              />
+              <label for="name">Name </label>
+              <i
+                class="pi pi-times"
+                (click)="filter['name'] = undefined; search()"
+              ></i>
+            </span>
+          </div>
+          <div class="p-field">
+            <span class="p-float-label p-input-icon-right">
+              <input
+                id="code"
+                type="text"
+                class="p-inputtext-sm"
+                pInputText
+                [(ngModel)]="filter['code']"
+              />
+              <label for="name">Code </label>
+              <i
+                class="pi pi-times"
+                (click)="filter['code'] = undefined; search()"
+              ></i>
+            </span>
+          </div>
+        </div>
+        <mat-action-row>
+          <button mat-button color="warn" (click)="clearSearch()">
+            Clear
+          </button>
+          <button mat-button color="primary" (click)="search()">Seach</button>
+        </mat-action-row>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </div>
+</mat-card>
