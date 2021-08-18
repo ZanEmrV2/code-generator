@@ -1,0 +1,167 @@
+<div class="content" fxLayout="column" fxLayoutGap="0.75rem">
+  <!-- Filter Panel -->
+  <p-accordion>
+    <p-accordionTab [transitionOptions]="'280ms cubic-bezier(0.4, 0, 0.2, 1)'">
+      <ng-template pTemplate="header">
+        <span fxLayout="row" fxLayoutGap="0.5rem">
+          <i class="pi pi-filter"></i>
+          <span class="filter-text">Filter</span>
+        </span>
+      </ng-template>
+
+      <div fxLayout="row" fxLayoutGap="10px">
+        <div
+          fxLayout="row"
+          fxLayoutGap="0.75rem"
+          fxFlex
+          fxLayoutAlign="start center"
+        >
+
+        <%_ fields.forEach(function(f){ _%>
+          <%_ if (f.name != 'id' && f.relation == undefined && f.searchable) { _%> 
+              <div class="p-field">
+                <span class="p-float-label p-input-icon-right">
+                      <%_ if (f.dbType.includes('string')) { _%> 
+                      <input
+                      id="<%= f.name %>"
+                type="text"
+                class="p-inputtext-sm"
+                pInputText
+                [(ngModel)]="filter['<%= f.name %>']"
+              />
+                    <%_ } _%>
+                    <label for="<%= f.name %>"><%= f.header %> </label>
+                    <i
+                class="pi pi-times clear"
+                (click)="filter['<%= f.name %>'] = undefined; search()"
+              ></i>
+                  </span>
+                  </div>
+          <%_ }_%> 
+       <%_ }); _%> 
+    <%_ relations.forEach(function(r){ _%>
+        <div class="p-field">
+         <span class="p-float-label">
+            <%_ if (r.type === 'mt1') { _%> 
+              <p-dropdown id="<%= r.name %>" optionValue="id" optionLabel="name" 
+                [autoDisplayFirst]="false" 
+                [showClear]="true"
+                [filter]="true" 
+                [options]="<%= r.rlCamelPlural %>!" 
+                [(ngModel)]="filter['<%= r.name %>']"
+                ></p-dropdown>
+            <%_ } _%>
+            <label for="<%= r.name %>"><%= r.header %> </label>
+        </span>
+        </div>
+      <%_ }); _%>
+
+        </div>
+        <div fxLayout="row" fxLayoutGap="4px" fxLayoutAlign="end center">
+          <button
+            pButton
+            class="p-button-text p-button-plain"
+            icon="pi pi-times"
+            label="Clear"
+            (click)="clearSearch()"
+          ></button>
+          <button
+            pButton
+            class="p-button-text p-button-plain"
+            icon="pi pi-search"
+            label="Search"
+            (click)="search()"
+          ></button>
+        </div>
+      </div>
+    </p-accordionTab>
+  </p-accordion>
+
+<!-- Table Panel -->
+  <p-card>
+    <ng-template pTemplate="header">
+      <div fxLayout="row" fxLayoutAlign="space-between center">
+        <span class="card-header-text"><%= entityName %></span>
+        <button
+          pButton
+          icon="pi pi-plus"
+          class="p-button-raised"
+          (click)="createOrUpdate()"
+          label="Create"
+        ></button>
+      </div>
+    </ng-template>
+    <div *ngIf="!<%= camelPluralEntityName %>?.length" class="text-center">No data found!</div>
+    <p-table
+      [rows]="perPage"
+      [lazy]="true"
+      [resizableColumns]="true"
+      [responsive]="true"
+      [autoLayout]="true"
+      (onLazyLoad)="pageChanged($event)"
+      [rowsPerPageOptions]="perPageOptions"
+      [loading]="isLoading"
+      [totalRecords]="totalItems"
+      [columns]="cols"
+      [value]="<%= camelPluralEntityName %>!"
+      [scrollable]="true"
+      scrollHeight="500px"
+      [paginator]="true"
+      *ngIf="<%= camelPluralEntityName %>?.length!"
+    >
+      <ng-template pTemplate="header" let-columns>
+        <tr>
+          <th *ngFor="let col of columns">
+            {{ col.header }}
+          </th>
+          <th style="flex: 0 0 2rem"></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-rowData let-columns="columns">
+        <tr>
+          <td *ngFor="let col of columns">
+            {{ rowData[col.field] }}
+          </td>
+          <td style="flex: 0 0 2 rem">
+            <div fxLayout="row" fxLayoutAlign="end">
+              <button
+                mat-icon-button
+                [matMenuTriggerFor]="menu"
+                [matMenuTriggerData]="{ id: rowData.id, element: rowData }"
+              >
+                <mat-icon>more_vert</mat-icon>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>
+
+<mat-menu #menu="matMenu">
+  <ng-template matMenuContent let-id="id" let-element="element">
+    <button
+      mat-menu-item
+      aria-label="Edit <%= entityName %>"
+      (click)="createOrUpdate(element)"
+    >
+      <mat-icon>edit</mat-icon>
+      <span>Edit</span>
+    </button>
+    <button
+      mat-menu-item
+      aria-label="Delete <%= entityName %>"
+      (click)="delete(element)"
+    >
+      <mat-icon>delete</mat-icon>
+      <span>Delete</span>
+    </button>
+  </ng-template>
+</mat-menu>
+<p-confirmDialog
+  [breakpoints]="{ '960px': '75vw', '640px': '100vw' }"
+  [style]="{ width: '50vw' }"
+  header="Confirmation Delete <%= entityName %>"
+  icon="pi pi-exclamation-triangle"
+></p-confirmDialog>

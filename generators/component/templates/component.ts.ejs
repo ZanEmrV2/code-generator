@@ -1,50 +1,67 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest } from 'rxjs';
 import { ConfirmationService, LazyLoadEvent, MenuItem } from 'primeng/api';
 import { DialogService } from 'primeng/dynamicdialog';
+import { Paginator } from 'primeng/paginator';
 
 import { CustomResponse } from '../../utils/custom-response';
-import { <%= capEntityName %> } from './<%= snakeEntityName %>.model';
-
 import {
   ITEMS_PER_PAGE,
   PER_PAGE_OPTIONS,
 } from '../../config/pagination.constants';
+import { HelperService } from 'src/app/utils/helper.service';
+import { ToastService } from 'src/app/shared/toast.service';
+import { Table } from 'primeng/table';
+
 <%_ relations.forEach(function(r){ _%>
   import { <%= r.rlCap %> } from 'src/app/setup/<%= r.rlSnake %>/<%= r.rlSnake %>.model';  
   import { <%= r.rlCap %>Service } from 'src/app/setup/<%= r.rlSnake %>/<%= r.rlSnake %>.service';  
 <%_ }); _%>
+
+import { <%= capEntityName %> } from './<%= snakeEntityName %>.model';
 import { <%= capEntityName %>Service } from './<%= snakeEntityName %>.service';
 import { <%= capEntityName %>UpdateComponent } from './update/<%= snakeEntityName %>-update.component';
-import { MatDialog } from '@angular/material/dialog';
-import { HelperService } from 'src/app/utils/helper.service';
-import { ToastService } from 'src/app/shared/toast.service';
 
 @Component({
   selector: 'app-<%= snakeEntityName %>',
-  templateUrl: './<%= snakeEntityName %>.component.html'
+  templateUrl: './<%= snakeEntityName %>.component.html',
 })
 export class <%= capEntityName %>Component implements OnInit {
+  @ViewChild('paginator') paginator!: Paginator;
+  @ViewChild('table') table!: Table;
   <%= camelPluralEntityName %>?: <%= capEntityName %>[] = [];
+
   <%_ relations.forEach(function(r){ _%>
     <%= r.rlCamelPlural %>?: <%= r.rlCap %>[] = [];  
   <%_ }); _%>
+
+  // Enum cols here
   cols = [
   <%_ fields.forEach(function(f){ _%>
     <%_ if (f.name != 'id') { _%> 
-      {field: '<%= f.name %>', header:'<%= f.header %>'  },
+      { 
+        field: '<%= f.name %>', 
+        header:'<%= f.header %>',
+        sort: '<%_ (f.relation == undefined) ? true : false _%>'  
+      },
     <%_ } _%>
   <%_ }); _%>
   ]; //Table display columns
+
   isLoading = false;
-  totalItems = 0;
-  perPage = ITEMS_PER_PAGE;
-  perPageOptions = PER_PAGE_OPTIONS;
   page?: number = 1;
+  per_page!: number;
+  totalItems = 0;
+  perPageOptions = PER_PAGE_OPTIONS;
   predicate!: string; //Sort column
   ascending!: boolean; //Sort direction asc/desc
-  filter: any = {}; // items filter objects
+  search: any = {}; // items search objects
+
+  //Mandatory filter
+  <%_ mandatory.forEach(function(m){ _%>
+    m!: number;
+  <%_ }) _%>
 
   constructor(
     protected <%= camelEntityName %>Service: <%= capEntityName %>Service,
@@ -55,7 +72,6 @@ export class <%= capEntityName %>Component implements OnInit {
     protected router: Router,
     protected confirmationService: ConfirmationService,
     protected dialogService: DialogService,
-    protected dialog: MatDialog,
     protected helper: HelperService,
     protected toastService: ToastService
   ) {}
@@ -68,20 +84,31 @@ export class <%= capEntityName %>Component implements OnInit {
   }
 
   /**
-   * Load data
-   * @param page
-   * @param dontNavigate
+   * Load data from api
+   * @param page = page number
+   * @param dontNavigate = if after successfuly update url params with pagination and sort info
    */
   loadPage(page?: number, dontNavigate?: boolean): void {
+    if ( <%_ mandatory.forEach(function(m, idx, array){ _%>
+      <%= '!'+m %>
+      <%_ if (idx !== array.length - 1){ _%>
+        <%= '||' %>
+      <%_ } _%>
+    <%_ }) _%>) {
+      return;
+    }
     this.isLoading = true;
     const pageToLoad: number = page ?? this.page ?? 1;
-
+    this.per_page = this.per_page ?? ITEMS_PER_PAGE;
     this.<%= camelEntityName %>Service
       .query({
         page: pageToLoad,
-        per_page: this.perPage,
+        per_page: this.per_page,
         sort: this.sort(),
-        ...this.helper.buildFilter(this.filter),
+        <%_ mandatory.forEach(function(m){ _%>
+          <%= `${m}: this.${m},` %>
+        <%_ }) _%>
+        ...this.helper.buildFilter(this.search),
       })
       .subscribe(
         (res: CustomResponse<<%= capEntityName %>[]>) => {
@@ -105,46 +132,80 @@ export class <%= capEntityName %>Component implements OnInit {
       this.activatedRoute.queryParamMap,
     ]).subscribe(([data, params]) => {
       const page = params.get('page');
-      const pageNumber = page !== null ? +page : 1;
+      const perPage = params.get('per_page');
       const sort = (params.get('sort') ?? data['defaultSort']).split(':');
       const predicate = sort[0];
       const ascending = sort[1] === 'asc';
-      if (
-        pageNumber !== this.page ||
-        predicate !== this.predicate ||
-        ascending !== this.ascending
-      ) {
+      this.per_page = perPage !== null ? parseInt(perPage) : ITEMS_PER_PAGE;
+      this.page = page !== null ? parseInt(page) : 1;
+      if (predicate !== this.predicate || ascending !== this.ascending) {
         this.predicate = predicate;
         this.ascending = ascending;
-        this.loadPage(pageNumber, true);
+      <%_ if (mandatory.lenght === 0) { _%> 
+          this.loadPage(this.page, true);
+      <%_ if (mandatory.lenght === 0) } _%> 
       }
     });
   }
 
+  <%_ if (mandatory.lenght > 0) { _%> 
   /**
-   * When page changed
-   * @param event page event to
+   * Mandatory filter field changed;
+   * Mandatory filter= fields that must be specified when requesting data
+   * @param event
    */
-  pageChanged(event: LazyLoadEvent): void {
-    this.page = event.first! / event.rows! + 1;
-    this.perPage = event.rows!;
-    this.loadPage();
+  filterChanged(): void {
+    if (this.page !== 1) {
+      setTimeout(() => this.paginator.changePage(0));
+    } else {
+      this.loadPage(1);
+    }
   }
+  <%_ } _%> 
+
 
   /**
-   * search items by @var filter params
+   * search items by @var search params
    */
-  search(): void {
-    this.page = 1;
-    this.loadPage();
+  onSearch(): void {
+    if (this.page !== 1) {
+      this.paginator.changePage(0);
+    } else {
+      this.loadPage();
+    }
   }
 
   /**
    * Clear search params
    */
   clearSearch(): void {
-    this.filter = {};
-    this.page = 1;
+    this.search = {};
+    if (this.page !== 1) {
+      this.paginator.changePage(0);
+    } else {
+      this.loadPage();
+    }
+  }
+
+  /**
+   * Sorting changed
+   * predicate = column to sort by
+   * ascending = sort ascending else descending
+   * @param $event
+   */
+  onSortChange($event: LazyLoadEvent): void {
+    this.predicate = $event.sortField!;
+    this.ascending = $event.sortOrder === 1;
+    this.loadPage();
+  }
+
+  /**
+   * When page changed
+   * @param event page event
+   */
+  pageChanged(event: any): void {
+    this.page = event.page + 1;
+    this.per_page = event.rows!;
     this.loadPage();
   }
 
@@ -153,18 +214,25 @@ export class <%= capEntityName %>Component implements OnInit {
    * @returns dfefault ot id sorting
    */
   protected sort(): string[] {
-    return ['id:asc'];
+    const predicate = this.predicate ? this.predicate : 'id';
+    const direction = this.ascending ? 'asc' : 'desc';
+    return [`${predicate}:${direction}`];
   }
 
   /**
-   * Creating or updating <%= capEntityName %> 
+   * Creating or updating <%= capEntityName %>
    * @param <%= camelEntityName %> ; If undefined initize new model to create else edit existing model
    */
-  createOrUpdate(<%= camelEntityName %>?: <%= capEntityName %> ): void {
-    const data: <%= capEntityName %>  = <%= camelEntityName %> ?? { ...new <%= capEntityName %>() };
+  createOrUpdate(<%= camelEntityName %>?: <%= capEntityName %>): void {
+    const data: <%= capEntityName %> = <%= camelEntityName %> ?? {
+      ...new <%= capEntityName %>(),
+      <%_ mandatory.forEach(function(m){ _%>
+        <%= `${m}: this.${m},` %>
+      <%_ }) _%>
+    };
     const ref = this.dialogService.open(<%= capEntityName %>UpdateComponent, {
       data,
-      header: 'Create/Update <%= entityName %>',
+      header: 'Create/Update <%= capEntityName %>',
     });
     ref.onClose.subscribe((result) => {
       if (result) {
@@ -174,7 +242,7 @@ export class <%= capEntityName %>Component implements OnInit {
   }
 
   /**
-   * Delete <%= capEntityName %> 
+   * Delete <%= capEntityName %>
    * @param <%= camelEntityName %>
    */
   delete(<%= camelEntityName %>: <%= capEntityName %>): void {
@@ -206,8 +274,9 @@ export class <%= capEntityName %>Component implements OnInit {
       this.router.navigate(['/<%= snakeEntityName %>'], {
         queryParams: {
           page: this.page,
-          per_page: this.perPage,
-          sort: this.predicate + ':' + (this.ascending ? 'asc' : 'desc'),
+          per_page: this.per_page,
+          sort:
+            this.predicate ?? 'id' + ':' + (this.ascending ? 'asc' : 'desc'),
         },
       });
     }
@@ -215,9 +284,11 @@ export class <%= capEntityName %>Component implements OnInit {
   }
 
   /**
-   * When error on loading data
+   * When error on loading data set data to empt and resert page to load
    */
   protected onError(): void {
+    setTimeout(() => (this.table.value = []));
+    this.page = 1;
     this.toastService.error('Error loading <%= entityName %>');
   }
 }

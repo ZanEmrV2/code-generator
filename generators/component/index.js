@@ -62,6 +62,7 @@ module.exports = class extends Generator {
   camelEntityName;
   camelPluralEntityName;
   entityName;
+  entityNamePlural;
   resourcePath;
 
   constructor(args, opts) {
@@ -182,6 +183,7 @@ module.exports = class extends Generator {
     this.camelEntityName = this.capEntityName.charAt(0).toLowerCase() + e.slice(1);
     this.camelPluralEntityName = pluralize(this.camelEntityName);
     this.entityName = _.startCase(this.capEntityName);
+    this.entityNamePlural = pluralize(entityName);
     this.snakeEntityName = this.capEntityName.replace(/[A-Z]/g, (letter, index) => {
       return index == 0 ? letter.toLowerCase() : '-' + letter.toLowerCase();
     });

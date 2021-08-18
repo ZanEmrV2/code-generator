@@ -1,46 +1,80 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpHeaders } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest } from 'rxjs';
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, LazyLoadEvent, MenuItem } from 'primeng/api';
 import { DialogService } from 'primeng/dynamicdialog';
 
 import { CustomResponse } from '../../utils/custom-response';
 import { <%= capEntityName %> } from './<%= snakeEntityName %>.model';
 
-import { ITEMS_PER_PAGE } from '../../config/pagination.constants';
+import {
+  ITEMS_PER_PAGE,
+  PER_PAGE_OPTIONS,
+} from '../../config/pagination.constants';
+<%_ relations.forEach(function(r){ _%>
+  import { <%= r.rlCap %> } from 'src/app/setup/<%= r.rlSnake %>/<%= r.rlSnake %>.model';  
+  import { <%= r.rlCap %>Service } from 'src/app/setup/<%= r.rlSnake %>/<%= r.rlSnake %>.service';  
+<%_ }); _%>
 import { <%= capEntityName %>Service } from './<%= snakeEntityName %>.service';
 import { <%= capEntityName %>UpdateComponent } from './update/<%= snakeEntityName %>-update.component';
+import { MatDialog } from '@angular/material/dialog';
+import { HelperService } from 'src/app/utils/helper.service';
+import { ToastService } from 'src/app/shared/toast.service';
 
 @Component({
   selector: 'app-<%= snakeEntityName %>',
-  templateUrl: './<%= snakeEntityName %>.component.html',
-  providers: [ConfirmationService, DialogService],
+  templateUrl: './<%= snakeEntityName %>.component.html'
 })
 export class <%= capEntityName %>Component implements OnInit {
   <%= camelPluralEntityName %>?: <%= capEntityName %>[] = [];
+
+  <%_ relations.forEach(function(r){ _%>
+    <%= r.rlCamelPlural %>?: <%= r.rlCap %>[] = [];  
+  <%_ }); _%>
+
+  // Enum cols here
   cols = [
   <%_ fields.forEach(function(f){ _%>
     <%_ if (f.name != 'id') { _%> 
       {field: '<%= f.name %>', header:'<%= f.header %>'  },
     <%_ } _%>
   <%_ }); _%>
-  ]
+  ]; //Table display columns
   isLoading = false;
   totalItems = 0;
-  itemsPerPage = ITEMS_PER_PAGE;
-  page?: number;
-  predicate!: string;
-  ascending!: boolean;
+  perPage = ITEMS_PER_PAGE;
+  perPageOptions = PER_PAGE_OPTIONS;
+  page?: number = 1;
+  predicate!: string; //Sort column
+  ascending!: boolean; //Sort direction asc/desc
+  filter: any = {}; // items filter objects
 
   constructor(
     protected <%= camelEntityName %>Service: <%= capEntityName %>Service,
+    <%_ relations.forEach(function(r){ _%>
+      protected <%= r.rlCamel %>Service: <%= r.rlCap %>Service,
+    <%_ }); _%>
     protected activatedRoute: ActivatedRoute,
     protected router: Router,
     protected confirmationService: ConfirmationService,
-    protected dialogService: DialogService
+    protected dialogService: DialogService,
+    protected dialog: MatDialog,
+    protected helper: HelperService,
+    protected toastService: ToastService
   ) {}
 
+  ngOnInit(): void {
+    <%_ relations.forEach(function(r){ _%>
+      this.<%= r.rlCamel %>Service.query().subscribe((resp: CustomResponse<<%= r.rlCap %>[]>) => this.<%= r.rlCamelPlural %>=resp.data)
+    <%_ }); _%>
+    this.handleNavigation();
+  }
+
+  /**
+   * Load data
+   * @param page
+   * @param dontNavigate
+   */
   loadPage(page?: number, dontNavigate?: boolean): void {
     this.isLoading = true;
     const pageToLoad: number = page ?? this.page ?? 1;
@@ -48,8 +82,9 @@ export class <%= capEntityName %>Component implements OnInit {
     this.<%= camelEntityName %>Service
       .query({
         page: pageToLoad,
-        size: this.itemsPerPage,
+        per_page: this.perPage,
         sort: this.sort(),
+        ...this.helper.buildFilter(this.filter),
       })
       .subscribe(
         (res: CustomResponse<<%= capEntityName %>[]>) => {
@@ -63,56 +98,25 @@ export class <%= capEntityName %>Component implements OnInit {
       );
   }
 
-  ngOnInit(): void {
-    this.handleNavigation();
-  }
-
-  trackId(index: number, item: <%= capEntityName %>): number {
-    return item.id!;
-  }
-
-  createOrUpdate(<%= camelEntityName %>?: <%= capEntityName %>): void {
-    const data:<%= capEntityName %>  = <%= camelEntityName %> ?? {... new <%= capEntityName %>() };
-    const dialogRef = this.dialogService.open(<%= capEntityName %>UpdateComponent, {
-      header: <%= camelEntityName %>?.id ? 'Update <%= capEntityName %>' : 'Create <%= capEntityName %>' ,
-      width: '70%',
-      data: data
-  });
-
-  dialogRef.onClose.subscribe((result) => {
-      if (result) {
-        this.loadPage(this.page)
-      }
-  });
-  }
-
-  delete(<%= camelEntityName %>: <%= capEntityName %>): void {
-    this.confirmationService.confirm({
-      message: 'Are you sure that you want to delete this action <%= capEntityName %>?',
-      accept: () => {
-          this.<%= camelEntityName %>Service.delete(<%= camelEntityName %>.id!).subscribe(resp =>  {
-            this.loadPage(this.page)
-          })
-      }
-  });
-  }
-
-  protected sort(): string[] {
-    const result = [this.predicate + ',' + (this.ascending ? 'asc' : 'desc')];
-    if (this.predicate !== 'id') {
-      result.push('id');
-    }
-    return result;
-  }
-
+  /**
+   * Called initialy/onInit to
+   * Restore page, sort option from url query params if exist and load page
+   */
   protected handleNavigation(): void {
-    combineLatest([this.activatedRoute.data, this.activatedRoute.queryParamMap]).subscribe(([data, params]) => {
+    combineLatest([
+      this.activatedRoute.data,
+      this.activatedRoute.queryParamMap,
+    ]).subscribe(([data, params]) => {
       const page = params.get('page');
       const pageNumber = page !== null ? +page : 1;
-      const sort = (params.get('sort') ?? data['defaultSort']).split(',');
+      const sort = (params.get('sort') ?? data['defaultSort']).split(':');
       const predicate = sort[0];
       const ascending = sort[1] === 'asc';
-      if (pageNumber !== this.page || predicate !== this.predicate || ascending !== this.ascending) {
+      if (
+        pageNumber !== this.page ||
+        predicate !== this.predicate ||
+        ascending !== this.ascending
+      ) {
         this.predicate = predicate;
         this.ascending = ascending;
         this.loadPage(pageNumber, true);
@@ -120,22 +124,103 @@ export class <%= capEntityName %>Component implements OnInit {
     });
   }
 
-  protected onSuccess(resp: CustomResponse<<%= capEntityName %>[]> | null, page: number, navigate: boolean): void {
+  /**
+   * When page changed
+   * @param event page event to
+   */
+  pageChanged(event: LazyLoadEvent): void {
+    this.page = event.first! / event.rows! + 1;
+    this.perPage = event.rows!;
+    this.loadPage();
+  }
+
+  /**
+   * search items by @var filter params
+   */
+  search(): void {
+    this.page = 1;
+    this.loadPage();
+  }
+
+  /**
+   * Clear search params
+   */
+  clearSearch(): void {
+    this.filter = {};
+    this.page = 1;
+    this.loadPage();
+  }
+
+  /**
+   * Impletement sorting Set/Reurn the sorting option for data
+   * @returns dfefault ot id sorting
+   */
+  protected sort(): string[] {
+    return ['id:asc'];
+  }
+
+  /**
+   * Creating or updating <%= capEntityName %> 
+   * @param <%= camelEntityName %> ; If undefined initize new model to create else edit existing model
+   */
+  createOrUpdate(<%= camelEntityName %>?: <%= capEntityName %> ): void {
+    const data: <%= capEntityName %>  = <%= camelEntityName %> ?? { ...new <%= capEntityName %>() };
+    const ref = this.dialogService.open(<%= capEntityName %>UpdateComponent, {
+      data,
+      header: 'Create/Update <%= entityName %>',
+    });
+    ref.onClose.subscribe((result) => {
+      if (result) {
+        this.loadPage(this.page);
+      }
+    });
+  }
+
+  /**
+   * Delete <%= capEntityName %> 
+   * @param <%= camelEntityName %>
+   */
+  delete(<%= camelEntityName %>: <%= capEntityName %>): void {
+    this.confirmationService.confirm({
+      message: 'Are you sure that you want to delete this <%= capEntityName %>?',
+      accept: () => {
+        this.<%= camelEntityName %>Service.delete(<%= camelEntityName %>.id!).subscribe((resp) => {
+          this.loadPage(this.page);
+          this.toastService.info(resp.message);
+        });
+      },
+    });
+  }
+
+  /**
+   * When successfully data loaded
+   * @param resp
+   * @param page
+   * @param navigate
+   */
+  protected onSuccess(
+    resp: CustomResponse<<%= capEntityName %>[]> | null,
+    page: number,
+    navigate: boolean
+  ): void {
     this.totalItems = resp?.total!;
     this.page = page;
     if (navigate) {
       this.router.navigate(['/<%= snakeEntityName %>'], {
         queryParams: {
           page: this.page,
-          size: this.itemsPerPage,
-          sort: this.predicate + ',' + (this.ascending ? 'asc' : 'desc'),
+          per_page: this.perPage,
+          sort: this.predicate + ':' + (this.ascending ? 'asc' : 'desc'),
         },
       });
     }
     this.<%= camelPluralEntityName %> = resp?.data ?? [];
   }
 
+  /**
+   * When error on loading data
+   */
   protected onError(): void {
-    //this.ngbPaginationPage = this.page ?? 1;
+    this.toastService.error('Error loading <%= entityName %>');
   }
 }
