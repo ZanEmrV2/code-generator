@@ -4,6 +4,7 @@ import { combineLatest } from 'rxjs';
 import { ConfirmationService, LazyLoadEvent, MenuItem } from 'primeng/api';
 import { DialogService } from 'primeng/dynamicdialog';
 import { Paginator } from 'primeng/paginator';
+import { Table } from 'primeng/table';
 
 import { CustomResponse } from '../../utils/custom-response';
 import {
@@ -12,8 +13,9 @@ import {
 } from '../../config/pagination.constants';
 import { HelperService } from 'src/app/utils/helper.service';
 import { ToastService } from 'src/app/shared/toast.service';
-import { Table } from 'primeng/table';
-
+<%_ if(enums.length > 0) { _%>
+import { EnumService, PlanrepEnum } from 'src/app/shared/enum.service';
+<%_ } _%>
 <%_ relations.forEach(function(r){ _%>
   import { <%= r.rlCap %> } from 'src/app/setup/<%= r.rlSnake %>/<%= r.rlSnake %>.model';  
   import { <%= r.rlCap %>Service } from 'src/app/setup/<%= r.rlSnake %>/<%= r.rlSnake %>.service';  
@@ -35,11 +37,13 @@ export class <%= capEntityName %>Component implements OnInit {
   <%_ relations.forEach(function(r){ _%>
     <%= r.rlCamelPlural %>?: <%= r.rlCap %>[] = [];  
   <%_ }); _%>
+  <%_ enums.forEach(function(e){ _%>
+    <%= e.eCamelPlural %>?: string[] = [];  
+  <%_ }); _%>
 
-  // Enum cols here
   cols = [
   <%_ fields.forEach(function(f){ _%>
-    <%_ if (f.name != 'id') { _%> 
+    <%_ if (f.name != 'id' && allMandatory.indexOf(f.name) === -1) { _%> 
       { 
         field: '<%= f.name %>', 
         header:'<%= f.header %>',
@@ -62,6 +66,9 @@ export class <%= capEntityName %>Component implements OnInit {
   <%_ mandatory.forEach(function(m){ _%>
     m!: number;
   <%_ }) _%>
+  <%_ mandatoryEnums.forEach(function(e){ _%>
+    m!: string;
+  <%_ }) _%>
 
   constructor(
     protected <%= camelEntityName %>Service: <%= capEntityName %>Service,
@@ -73,12 +80,18 @@ export class <%= capEntityName %>Component implements OnInit {
     protected confirmationService: ConfirmationService,
     protected dialogService: DialogService,
     protected helper: HelperService,
-    protected toastService: ToastService
+    protected toastService: ToastService,
+    <%_ if(enums.length > 0) { _%>
+      protected enumService: EnumService
+    <%_}_%>
   ) {}
 
   ngOnInit(): void {
     <%_ relations.forEach(function(r){ _%>
       this.<%= r.rlCamel %>Service.query().subscribe((resp: CustomResponse<<%= r.rlCap %>[]>) => this.<%= r.rlCamelPlural %>=resp.data)
+    <%_ }); _%>
+    <%_ enums.forEach(function(e){ _%>
+      this.<%= e.eCamelPlural %>=this.enumService.get('<%=e.name%>');
     <%_ }); _%>
     this.handleNavigation();
   }
@@ -89,7 +102,7 @@ export class <%= capEntityName %>Component implements OnInit {
    * @param dontNavigate = if after successfuly update url params with pagination and sort info
    */
   loadPage(page?: number, dontNavigate?: boolean): void {
-    if ( <%_ mandatory.forEach(function(m, idx, array){ _%>
+    if ( <%_ allMandatory.forEach(function(m, idx, array){ _%>
       <%= '!'+m %>
       <%_ if (idx !== array.length - 1){ _%>
         <%= '||' %>
@@ -105,7 +118,7 @@ export class <%= capEntityName %>Component implements OnInit {
         page: pageToLoad,
         per_page: this.per_page,
         sort: this.sort(),
-        <%_ mandatory.forEach(function(m){ _%>
+        <%_ allMandatory.forEach(function(m){ _%>
           <%= `${m}: this.${m},` %>
         <%_ }) _%>
         ...this.helper.buildFilter(this.search),
@@ -141,14 +154,14 @@ export class <%= capEntityName %>Component implements OnInit {
       if (predicate !== this.predicate || ascending !== this.ascending) {
         this.predicate = predicate;
         this.ascending = ascending;
-      <%_ if (mandatory.lenght === 0) { _%> 
+      <%_ if (allMandatory.lenght === 0) { _%> 
           this.loadPage(this.page, true);
-      <%_ if (mandatory.lenght === 0) } _%> 
+      <%_ if (allMandatory.lenght === 0) } _%> 
       }
     });
   }
 
-  <%_ if (mandatory.lenght > 0) { _%> 
+  <%_ if (allMandatory.lenght > 0) { _%> 
   /**
    * Mandatory filter field changed;
    * Mandatory filter= fields that must be specified when requesting data
@@ -226,7 +239,7 @@ export class <%= capEntityName %>Component implements OnInit {
   createOrUpdate(<%= camelEntityName %>?: <%= capEntityName %>): void {
     const data: <%= capEntityName %> = <%= camelEntityName %> ?? {
       ...new <%= capEntityName %>(),
-      <%_ mandatory.forEach(function(m){ _%>
+      <%_ allMandatory.forEach(function(m){ _%>
         <%= `${m}: this.${m},` %>
       <%_ }) _%>
     };

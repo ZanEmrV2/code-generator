@@ -1,6 +1,6 @@
 <div class="content" fxLayout="column" fxLayoutGap="0.75rem">
   <!-- Filter Panel -->
-  <%_ if (mandatory.lenght > 0) { _%> 
+  <%_ if (allMandatory.lenght > 0) { _%> 
   <p-card class="filter">
     <ng-template pTemplate="header">
       <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="8px">
@@ -17,6 +17,7 @@
           fxLayoutAlign="start center"
         >
         <%_ relations.forEach(function(r){ _%>
+          <%_ if(allMandatory.indexOf(r.name) !== -1) _%>
             <div class="p-field" fxFlex>
               <span class="p-float-label">
                 <p-dropdown
@@ -33,6 +34,27 @@
                 <label for="<%= r.name %>"><%= r.header %> </label>
               </span>
             </div>
+          <%_ } _%>
+        <%_ }) _%>
+        <%_ enums.forEach(function(e){ _%>
+          <%_ if(allMandatory.indexOf(e.name) !== -1) _%>
+            <div class="p-field" fxFlex>
+              <span class="p-float-label">
+                <p-dropdown
+                  id="<%= e.name %>"
+                  optionValue="value"
+                  optionLabel="display"
+                  [autoDisplayFirst]="false"
+                  [filter]="true"
+                  class="p-inputtext-sm"
+                  [options]="<%= e.eCamelPlural %>!"
+                  (onChange)="filterChanged()"
+                  [(ngModel)]="<%= e.name %>"
+                ></p-dropdown>
+                <label for="<%= e.name %>"><%= e.header %> </label>
+              </span>
+            </div>
+          <%_ } _%>
         <%_ }) _%>
         </div>
         <div fxLayout="row" fxLayoutGap="4px" fxLayoutAlign="end center">
@@ -95,6 +117,25 @@
                   </div>
               <%_ }_%> 
            <%_ }); _%> 
+           <%_ enums.forEach(function(e){ _%>
+            <%_ if(allMandatory.indexOf(e.name) === -1) _%>
+              <div class="p-field" fxFlex>
+                <span class="p-float-label">
+                  <p-dropdown
+                    id="<%= e.name %>"
+                    optionValue="value"
+                    optionLabel="display"
+                    [autoDisplayFirst]="false"
+                    [filter]="true"
+                    class="p-inputtext-sm"
+                    [options]="<%= e.eCamelPlural %>!"
+                    [(ngModel)]="search['<%= e.name %>']"
+                  ></p-dropdown>
+                  <label for="<%= e.name %>"><%= e.header %> </label>
+                </span>
+              </div>
+            <%_ } _%>
+          <%_ }) _%>
             </div>
             <button
               pButton
@@ -111,7 +152,7 @@
     </div>
   </p-card>
   <%_ } _%>
-  <%_ if (mandatory.lenght === 0) { _%> 
+  <%_ if (allMandatory.lenght === 0) { _%> 
     <p-accordion>
       <p-accordionTab [transitionOptions]="'280ms cubic-bezier(0.4, 0, 0.2, 1)'">
         <ng-template pTemplate="header">
@@ -155,7 +196,8 @@
                 <p-dropdown id="<%= r.name %>" 
                   optionValue="id" 
                   optionLabel="name" 
-                  [autoDisplayFirst]="false" 
+                  [autoDisplayFirst]="false"
+                  (onChange)="onSearch()"
                   [showClear]="true"
                   [filter]="true" 
                   [options]="<%= r.rlCamelPlural %>!" 
@@ -166,6 +208,27 @@
             </div>
         <%_ } _%>
       <%_ }); _%>
+      <%_ enums.forEach(function(e){ _%>
+        <%_ if(allMandatory.indexOf(e.name) === -1) _%>
+          <div class="p-field" fxFlex>
+            <span class="p-float-label">
+              <p-dropdown
+                id="<%= e.name %>"
+                optionValue="value"
+                optionLabel="display"
+                (onChange)="onSearch()"
+                [autoDisplayFirst]="false"
+                [filter]="true"
+                [showClear]="true"
+                class="p-inputtext-sm"
+                [options]="<%= e.eCamelPlural %>!"
+                [(ngModel)]="search['<%= e.name %>']"
+              ></p-dropdown>
+              <label for="<%= e.name %>"><%= e.header %> </label>
+            </span>
+          </div>
+        <%_ } _%>
+      <%_ }) _%>
       </div>
           <div fxLayout="row" fxLayoutGap="4px" fxLayoutAlign="end center">
             <button
@@ -211,7 +274,7 @@
             icon="pi pi-plus"
             class="p-button-raised"
             [disabled]="            
-                <%_ mandatory.forEach(function(m, idx, array){ _%>
+                <%_ allMandatory.forEach(function(m, idx, array){ _%>
                   <%= '!'+m %>
                   <%_ if (idx !== array.length - 1){ _%>
                     <%= '||' %>
