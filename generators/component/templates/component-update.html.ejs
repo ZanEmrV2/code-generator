@@ -8,7 +8,7 @@
   >
     <div fxLayout="column" fxLayoutGap="1rem">
       <%_ fields.forEach(function(f){ _%>
-        <%_ if (f.name != 'id' && f.relation == undefined) { _%> 
+        <%_ if (f.name != 'id' && f.relation === undefined && f.dbType !== 'enum') { _%> 
                 <div class="p-field p-col-12 p-md-4" fxFlex>
                 <span class="p-float-label">
                     <%_ if (f.dbType.includes('string')) { _%> 
@@ -47,6 +47,8 @@
                         [filter]="true"
                         optionValue="id"
                         optionLabel="name"
+                        class="p-inputtext-sm"
+                        appendTo="body"
                         [options]="<%= r.rlCamelPlural %>!" 
                         formControlName="<%= r.name %>"></p-dropdown>
                     <%_ } _%>
@@ -71,6 +73,7 @@
               [autoDisplayFirst]="false"
               [filter]="true"
               class="p-inputtext-sm"
+              appendTo="body"
               [options]="<%= e.eCamelPlural %>!"
               formControlName="<%= e.name %>"
             ></p-dropdown>

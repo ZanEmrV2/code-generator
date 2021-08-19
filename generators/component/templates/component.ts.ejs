@@ -38,7 +38,7 @@ export class <%= capEntityName %>Component implements OnInit {
     <%= r.rlCamelPlural %>?: <%= r.rlCap %>[] = [];  
   <%_ }); _%>
   <%_ enums.forEach(function(e){ _%>
-    <%= e.eCamelPlural %>?: string[] = [];  
+    <%= e.eCamelPlural %>?: PlanrepEnum[] = [];  
   <%_ }); _%>
 
   cols = [
@@ -68,10 +68,10 @@ export class <%= capEntityName %>Component implements OnInit {
 
   //Mandatory filter
   <%_ mandatory.forEach(function(m){ _%>
-    m!: number;
+    <%=m%>!: number;
   <%_ }); _%>
   <%_ mandatoryEnums.forEach(function(e){ _%>
-    m!: string;
+    <%=e%>!: string;
   <%_ }); _%>
 
   constructor(
@@ -95,7 +95,7 @@ export class <%= capEntityName %>Component implements OnInit {
       this.<%= r.rlCamel %>Service.query().subscribe((resp: CustomResponse<<%= r.rlCap %>[]>) => this.<%= r.rlCamelPlural %>=resp.data)
     <%_ }); _%>
     <%_ enums.forEach(function(e){ _%>
-      this.<%= e.eCamelPlural %>=this.enumService.get('<%=e.name%>');
+      this.<%= e.eCamelPlural %>=this.enumService.get('<%=e.eCamelPlural%>');
     <%_ }); _%>
     this.handleNavigation();
   }
@@ -106,9 +106,9 @@ export class <%= capEntityName %>Component implements OnInit {
    * @param dontNavigate = if after successfuly update url params with pagination and sort info
    */
   loadPage(page?: number, dontNavigate?: boolean): void {
-    <%_ if (allMandatory.lenght > 0) { _%> 
+    <%_ if (allMandatory.length > 0) { _%> 
       if ( <%_ allMandatory.forEach(function(m, idx, array){ _%>
-        <%= '!'+m %>
+        <%= '!this.'+m %>
         <%_ if (idx !== array.length - 1){ _%>
           <%= '||' %>
         <%_ } _%>
@@ -160,14 +160,14 @@ export class <%= capEntityName %>Component implements OnInit {
       if (predicate !== this.predicate || ascending !== this.ascending) {
         this.predicate = predicate;
         this.ascending = ascending;
-      <%_ if (allMandatory.lenght === 0) { _%> 
+      <%_ if (allMandatory.length === 0) { _%> 
           this.loadPage(this.page, true);
       <%_ } _%> 
       }
     });
   }
 
-  <%_ if (allMandatory.lenght > 0) { _%> 
+  <%_ if (allMandatory.length > 0) { _%> 
   /**
    * Mandatory filter field changed;
    * Mandatory filter= fields that must be specified when requesting data

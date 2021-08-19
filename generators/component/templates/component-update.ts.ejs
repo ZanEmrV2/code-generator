@@ -30,7 +30,7 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
   <%_ }); _%>
 
   <%_ enums.forEach(function(e){ _%>
-    <%= e.eCamelPlural %>?: string[] = [];  
+    <%= e.eCamelPlural %>?: PlanrepEnum[] = [];  
   <%_ }); _%>
 
   /**
@@ -66,7 +66,7 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
       this.<%= r.rlCamel %>Service.query().subscribe((resp: CustomResponse<<%= r.rlCap %>[]>) => this.<%= r.rlCamelPlural %>=resp.data)
     <%_ }); _%>
     <%_ enums.forEach(function(e){ _%>
-      this.<%= e.eCamelPlural %>=this.enumService.get('<%=e.name%>');
+      this.<%= e.eCamelPlural %>=this.enumService.get('<%=e.eCamelPlural%>');
     <%_ }); _%>
     this.updateForm(this.dialogConfig.data); //Initilize form with data from dialog
   }

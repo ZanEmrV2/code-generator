@@ -153,7 +153,7 @@ module.exports = class extends Generator {
       });
     }
     this.rawRelations = this.fields.filter(f => f.relation != undefined);
-    this.rawEnums = this.fields.filter(f => f.dbType == 'enum');
+    this.rawEnums = this.fields.filter(f => f.dbType === 'enum');
   }
 
   async _getMandator() {
@@ -163,7 +163,7 @@ module.exports = class extends Generator {
         value: r.name,
       };
     });
-    this.mandatory = await this.prompt([
+    const mandatory = await this.prompt([
       {
         type: 'checkbox',
         name: 'filters',
@@ -171,6 +171,7 @@ module.exports = class extends Generator {
         choices,
       },
     ]);
+    this.mandatory = mandatory.filters || [];
   }
 
   async _getMandatoEnums() {
@@ -180,14 +181,15 @@ module.exports = class extends Generator {
         value: r.name,
       };
     });
-    this.mandatoryEnums = await this.prompt([
+    const mandatoryEnums = await this.prompt([
       {
         type: 'checkbox',
-        name: 'filters',
+        name: 'selection',
         message: 'Select Mandatory Enums Filters',
         choices,
       },
     ]);
+    this.mandatoryEnums = mandatoryEnums.selection || [];
   }
 
   writing() {
@@ -200,13 +202,20 @@ module.exports = class extends Generator {
     this._generateComponentUpdate();
     this._updateRoute();
     this._updateMenu();
+    this._updateEnums();
   }
 
   _init() {
     this.parentFolder = this.parentFolderInput.name.toLowerCase();
     const e = this.entityNameInput.name.replace('.json', '').replace('_', '').replace('-', '');
     const fname = this.entityNameInput.name.replace('.json', '');
-    this.capEntityName = e.charAt(0).toUpperCase() + e.slice(1);
+    const words = fname.split('_');
+    this.capEntityName = '';
+    words.forEach(w => {
+      this.capEntityName = this.capEntityName + w.charAt(0).toUpperCase() + w.slice(1);
+    });
+    this.log('Caps is');
+    this.log(this.capEntityName);
     this.camelEntityName = this.capEntityName.charAt(0).toLowerCase() + e.slice(1);
     this.camelPluralEntityName = pluralize(this.camelEntityName);
     this.entityName = _.startCase(fname.replace('_', ' '));
@@ -244,6 +253,7 @@ module.exports = class extends Generator {
         rlSnake,
         rlCamelPlural,
         mandatory,
+        header: _.startCase(r.name).replace('Id', ''),
       };
     });
 
@@ -258,7 +268,7 @@ module.exports = class extends Generator {
         return index == 0 ? letter.toLowerCase() : '-' + letter.toLowerCase();
       });
       const eCamelPlural = pluralize(eCamel);
-      const mandatory = this.mandatoryEnum.indexOf(e.name) !== 1;
+      const mandatory = this.mandatoryEnums.indexOf(e.name) !== 1;
       return {
         ...e,
         eCap,
@@ -267,10 +277,9 @@ module.exports = class extends Generator {
         eSnake,
         eCamelPlural,
         mandatory,
+        header: _.startCase(e.name).replace('Id', ''),
       };
     });
-    this.mandatory = this.mandatory || [];
-    this.mandatoryEnums = this.mandatoryEnums || [];
     this.allMandatory = this.mandatory.concat(this.mandatoryEnums);
   }
 
@@ -410,7 +419,7 @@ module.exports = class extends Generator {
           (m) => m.${this.capEntityName}Module
         ),
     },\n`;
-    if (!file.includes(this.snakeEntityName)) {
+    if (!file.includes('"' + this.snakeEntityName + '"')) {
       const insert = route + hook;
       this.fs.write(path, file.replace(hook, insert));
     } else {
@@ -427,11 +436,26 @@ module.exports = class extends Generator {
       icon: 'pi pi-fw pi-arrow-right',
       routerLink: '${this.snakeEntityName}',
     },\n`;
-    if (!file.includes(this.snakeEntityName)) {
+    if (!file.includes('"' + this.snakeEntityName + '"')) {
       const insert = menuItem + hook;
       this.fs.write(path, file.replace(hook, insert));
     } else {
-      this.log('Route exist, skipping');
+      this.log('Menu exist, skipping');
     }
+  }
+
+  async _updateEnums() {
+    const path = this.destinationPath('src/app/shared/enum.service.ts');
+    let file = this.fs.read(path);
+    const hook = `/**====Planrep Enum Generator Hook: Dont Delete====*/`;
+    let insert = '';
+    this.enums.forEach(e => {
+      const enums = `${e.eCamelPlural}: [],\n`;
+      if (!file.includes(e.eCamelPlural)) {
+        insert = insert + enums;
+      }
+    });
+    insert = insert + hook;
+    this.fs.write(path, file.replace(hook, insert));
   }
 };
