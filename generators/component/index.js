@@ -216,7 +216,9 @@ module.exports = class extends Generator {
     });
     this.log('Caps is');
     this.log(this.capEntityName);
-    this.camelEntityName = this.capEntityName.charAt(0).toLowerCase() + e.slice(1);
+    this.camelEntityName = this.capEntityName.charAt(0).toLowerCase() + this.capEntityName.slice(1);
+    this.log('Cap camel is ');
+    this.log(this.camelEntityName);
     this.camelPluralEntityName = pluralize(this.camelEntityName);
     this.entityName = _.startCase(fname.replace('_', ' '));
     this.entityNamePlural = pluralize(this.entityName);
