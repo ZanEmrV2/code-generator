@@ -69,7 +69,8 @@
         >
           <div fxLayout="row wrap" fxLayoutGap="10px">
             <div fxLayout="row wrap" fxLayoutGap="0.75rem" fxFlex fxLayoutAlign="start center">
-              <%_ fields.forEach(function(f){ _%> <%_ if (f.name != 'id' && f.relation === undefined && f.searchable && f.dbType !== 'enum') { _%>
+              <%_ fields.forEach(function(f){ _%> 
+                <%_ if (f.name != 'id' && f.relation === undefined && f.searchable && f.dbType !== 'enum' && f.dbType !== 'integer' && f.dbType !== 'boolean' && f.dbType !== 'decimal' && f.dbType !== 'double' && f.dbType !== 'float') { _%>
               <div class="p-field" fxFlex>
                 <span class="p-float-label p-input-icon-right">
                   <%_ if (f.dbType.includes('string')) { _%>
@@ -125,7 +126,7 @@
 
       <div fxLayout="row wrap" fxLayoutGap="10px">
         <div fxLayout="row wrap" fxLayoutGap="0.75rem" fxFlex fxLayoutAlign="start center">
-          <%_ fields.forEach(function(f){ _%> <%_ if (f.name != 'id' && f.relation == undefined && f.searchable && f.dbType !== 'enum') { _%>
+          <%_ fields.forEach(function(f){ _%> <%_ if (f.name != 'id' && f.relation == undefined && f.searchable && f.dbType !== 'enum' && f.dbType !== 'integer' && f.dbType !== 'boolean' && f.dbType !== 'decimal' && f.dbType !== 'double' && f.dbType !== 'float') { _%>
           <div class="p-field">
             <span class="p-float-label p-input-icon-right">
               <%_ if (f.dbType.includes('string')) { _%>

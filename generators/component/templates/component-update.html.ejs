@@ -8,7 +8,7 @@
   >
     <div fxLayout="column" fxLayoutGap="1rem">
       <%_ fields.forEach(function(f){ _%>
-        <%_ if (f.name != 'id' && f.relation === undefined && f.dbType !== 'enum') { _%> 
+        <%_ if (f.name != 'id' && f.relation === undefined && f.dbType !== 'enum' && !f.dbType.includes('boolean')) { _%> 
                 <div class="p-field p-col-12 p-md-4" fxFlex>
                 <span class="p-float-label">
                     <%_ if (f.dbType.includes('string')) { _%> 
@@ -37,6 +37,16 @@
               <%_ } _%>
                 </div>
         <%_ } _%>
+        <%_ if (f.name != 'id' && f.relation === undefined && f.dbType !== 'enum' && f.dbType.includes('boolean')) { _%> 
+          <div fxLayout="row" fxLayoutGap="2px">
+          <p-inputSwitch
+          id="<%= f.name %>"
+          name="<%= f.name %>"
+          formControlName="<%= f.name %>"
+        ></p-inputSwitch>
+        <label for="<%= f.name %>"><%= f.header %> </label>
+      </div>
+      <%_ } _%>
     <%_ }); _%>
     <%_ relations.forEach(function(r){ _%>
                 <div class="p-field" fxFlex>
