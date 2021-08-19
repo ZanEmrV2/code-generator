@@ -160,10 +160,10 @@ export class <%= capEntityName %>Component implements OnInit {
       if (predicate !== this.predicate || ascending !== this.ascending) {
         this.predicate = predicate;
         this.ascending = ascending;
-      <%_ if (allMandatory.length === 0) { _%> 
-          this.loadPage(this.page, true);
-      <%_ } _%> 
       }
+      <%_ if (allMandatory.length === 0) { _%> 
+        this.loadPage(this.page, true);
+      <%_ } _%> 
     });
   }
 
@@ -213,9 +213,11 @@ export class <%= capEntityName %>Component implements OnInit {
    * @param $event
    */
   onSortChange($event: LazyLoadEvent): void {
-    this.predicate = $event.sortField!;
-    this.ascending = $event.sortOrder === 1;
-    this.loadPage();
+    if ($event.sortField) {
+      this.predicate = $event.sortField!;
+      this.ascending = $event.sortOrder === 1;
+      this.loadPage();
+    }
   }
 
   /**
