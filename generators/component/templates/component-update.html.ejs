@@ -66,7 +66,7 @@
                 </span>
                 <%_ if (r.validations !== undefined) { _%>
                   <span *ngIf="editForm.get('<%= r.name %>')!.invalid && (editForm.get('<%= r.name %>')!.dirty || editForm.get('<%= r.name %>')!.touched || formError)">
-                  <%_  if(r.validations.includes('required') || allMandatory.includes(f.name)){_%>
+                  <%_  if(r.validations !==null && r.validations.includes('required') || allMandatory.includes(r.name)){_%>
                       <small class="p-error" *ngIf="editForm.get('<%= r.name %>')?.errors?.required"><%= r.header %> is required.</small>
                   <%_ } _%>
                   </span>

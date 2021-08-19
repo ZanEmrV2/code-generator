@@ -41,7 +41,7 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
       <%=f.name %>: [null, 
       <%_ if (f.validations !== undefined || allMandatory.includes(f.name)) { _%>
         [
-          <%_  if(f.validations.includes('required') || allMandatory.includes(f.name)){_%>Validators.required,<%_}_%> 
+          <%_  if(f.validations !== null && f.validations.includes('required') || allMandatory.includes(f.name)){_%>Validators.required,<%_}_%> 
         ]
         <%_}_%>],
     <%_ }); _%>
