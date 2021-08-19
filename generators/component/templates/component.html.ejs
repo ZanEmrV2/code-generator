@@ -1,6 +1,6 @@
 <div class="content" fxLayout="column" fxLayoutGap="0.75rem">
   <!-- Filter Panel -->
-  <%_ if (allMandatory.lenght > 0) { _%> 
+  <%_ if (allMandatory.length > 0) { _%>
   <p-card class="filter">
     <ng-template pTemplate="header">
       <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="8px">
@@ -8,80 +8,56 @@
         <span class="card-header-text">Filter</span>
       </div>
     </ng-template>
-    <div fxLayout="column" fxLayoutGap="10px">
+    <div fxLayout="column" fxLayoutGap="4px">
       <div fxLayout="row wrap" fxLayoutGap="10px">
-        <div
-          fxLayout="row wrap"
-          fxLayoutGap="0.75rem"
-          fxFlex
-          fxLayoutAlign="start center"
-        >
-        <%_ relations.forEach(function(r){ _%>
-          <%_ if(allMandatory.indexOf(r.name) !== -1) _%>
-            <div class="p-field" fxFlex>
-              <span class="p-float-label">
-                <p-dropdown
-                  id="<%= r.name %>"
-                  optionValue="id"
-                  optionLabel="name"
-                  [autoDisplayFirst]="false"
-                  [filter]="true"
-                  class="p-inputtext-sm"
-                  [options]="<%= r.rlCamelPlural %>!"
-                  (onChange)="filterChanged()"
-                  [(ngModel)]="<%= r.name %>"
-                ></p-dropdown>
-                <label for="<%= r.name %>"><%= r.header %> </label>
-              </span>
-            </div>
-          <%_ } _%>
-        <%_ }) _%>
-        <%_ enums.forEach(function(e){ _%>
-          <%_ if(allMandatory.indexOf(e.name) !== -1) _%>
-            <div class="p-field" fxFlex>
-              <span class="p-float-label">
-                <p-dropdown
-                  id="<%= e.name %>"
-                  optionValue="value"
-                  optionLabel="display"
-                  [autoDisplayFirst]="false"
-                  [filter]="true"
-                  class="p-inputtext-sm"
-                  [options]="<%= e.eCamelPlural %>!"
-                  (onChange)="filterChanged()"
-                  [(ngModel)]="<%= e.name %>"
-                ></p-dropdown>
-                <label for="<%= e.name %>"><%= e.header %> </label>
-              </span>
-            </div>
-          <%_ } _%>
-        <%_ }) _%>
+        <div fxLayout="row wrap" fxLayoutGap="0.75rem" fxFlex fxLayoutAlign="start center">
+          <%_ relations.forEach(function(r) { _%> <%_ if(allMandatory.indexOf(r.name) !== -1) { _%>
+          <div class="p-field" fxFlex>
+            <span class="p-float-label">
+              <p-dropdown
+                id="<%= r.name %>"
+                optionValue="id"
+                optionLabel="name"
+                [autoDisplayFirst]="false"
+                [filter]="true"
+                class="p-inputtext-sm"
+                [options]="<%= r.rlCamelPlural %>!"
+                (onChange)="filterChanged()"
+                [(ngModel)]="<%= r.name %>"
+              ></p-dropdown>
+              <label for="<%= r.name %>"><%= r.header %> </label>
+            </span>
+          </div>
+          <%_ } _%> <%_ }) _%> <%_ enums.forEach(function(e){ _%> <%_ if(allMandatory.indexOf(e.name) !== -1) { _%>
+          <div class="p-field" fxFlex>
+            <span class="p-float-label">
+              <p-dropdown
+                id="<%= e.name %>"
+                optionValue="value"
+                optionLabel="display"
+                [autoDisplayFirst]="false"
+                [filter]="true"
+                class="p-inputtext-sm"
+                [options]="<%= e.eCamelPlural %>!"
+                (onChange)="filterChanged()"
+                [(ngModel)]="<%= e.name %>"
+              ></p-dropdown>
+              <label for="<%= e.name %>"><%= e.header %> </label>
+            </span>
+          </div>
+          <%_ } _%> <%_ }) _%>
         </div>
-        <div fxLayout="row" fxLayoutGap="4px" fxLayoutAlign="end center">
+        <div fxLayout="row wrap" fxFlex="140px" fxLayoutGap="4px" fxLayoutAlign="end center">
           <button
             pButton
             type="button"
-            [pTooltip]="
-              advFilter.selected
-                ? 'Hide Advanced Search'
-                : 'Show Advanced Search'
-            "
+            [pTooltip]="advFilter.selected ? 'Hide Advanced Search' : 'Show Advanced Search'"
             tooltipPosition="bottom"
-            [icon]="
-              advFilter.selected
-                ? 'pi pi-angle-double-up'
-                : 'pi pi-angle-double-down'
-            "
+            [icon]="advFilter.selected ? 'pi pi-angle-double-up' : 'pi pi-angle-double-down'"
             class="p-button-rounded p-button-text p-button-plain"
             (click)="advFilter.selected = !advFilter.selected"
           ></button>
-          <button
-            pButton
-            class="p-button-primary p-button-raised"
-            icon="pi pi-search"
-            label="Search"
-            (click)="onSearch()"
-          ></button>
+          <button pButton class="p-button-primary p-button-raised" icon="pi pi-search" label="Search" (click)="onSearch()"></button>
         </div>
       </div>
       <p-accordion>
@@ -92,33 +68,18 @@
           [transitionOptions]="'280ms cubic-bezier(0.4, 0, 0.2, 1)'"
         >
           <div fxLayout="row wrap" fxLayoutGap="10px">
-            <div
-              fxLayout="row wrap"
-              fxLayoutGap="0.75rem"
-              fxFlex
-              fxLayoutAlign="start center"
-            >
-            <%_ fields.forEach(function(f){ _%>
-              <%_ if (f.name != 'id' && f.relation == undefined && f.searchable) { _%> 
-                  <div class="p-field" fxFlex>
-                    <span class="p-float-label p-input-icon-right">
-                      <%_ if (f.dbType.includes('string')) { _%> 
-                          <input
-                            id="<%= f.name %>"
-                            type="text"
-                            class="p-inputtext-sm"
-                            pInputText
-                            [(ngModel)]="search['<%= f.name %>']"
-                          />
-                      <%_ } _%>
-                      <label for="<%= f.name %>"><%= f.header %> </label>
-                      <i class="pi pi-times clear" (click)="filter['<%= f.name %>'] = undefined; search()"></i>
-                    </span>
-                  </div>
-              <%_ }_%> 
-           <%_ }); _%> 
-           <%_ enums.forEach(function(e){ _%>
-            <%_ if(allMandatory.indexOf(e.name) === -1) _%>
+            <div fxLayout="row wrap" fxLayoutGap="0.75rem" fxFlex fxLayoutAlign="start center">
+              <%_ fields.forEach(function(f){ _%> <%_ if (f.name != 'id' && f.relation == undefined && f.searchable) { _%>
+              <div class="p-field" fxFlex>
+                <span class="p-float-label p-input-icon-right">
+                  <%_ if (f.dbType.includes('string')) { _%>
+                  <input id="<%= f.name %>" type="text" class="p-inputtext-sm" pInputText [(ngModel)]="search['<%= f.name %>']" />
+                  <%_ } _%>
+                  <label for="<%= f.name %>"><%= f.header %> </label>
+                  <i class="pi pi-times clear" (click)="search['<%= f.name %>'] = undefined; onSearch()"></i>
+                </span>
+              </div>
+              <%_ }_%> <%_ }); _%> <%_ enums.forEach(function(e){ _%> <%_ if(allMandatory.indexOf(e.name) === -1) { _%>
               <div class="p-field" fxFlex>
                 <span class="p-float-label">
                   <p-dropdown
@@ -134,82 +95,64 @@
                   <label for="<%= e.name %>"><%= e.header %> </label>
                 </span>
               </div>
-            <%_ } _%>
-          <%_ }) _%>
+              <%_ } _%> <%_ }) _%>
             </div>
-            <button
-              pButton
-              pTooltip="Clear Advanced Search"
-              tooltipPosition="bottom"
-              class="p-button-text p-button-plain"
-              icon="pi pi-times"
-              label="Clear"
-              (click)="clearSearch()"
-            ></button>
+            <div fxLayout="row" fxLayoutGap="4px" fxFlex="140px" fxLayoutAlign="end">
+              <button
+                pButton
+                pTooltip="Clear Advanced Search"
+                tooltipPosition="bottom"
+                class="p-button-text p-button-plain"
+                icon="pi pi-times"
+                label="Clear"
+                (click)="clearSearch()"
+              ></button>
+            </div>
           </div>
         </p-accordionTab>
       </p-accordion>
     </div>
   </p-card>
-  <%_ } _%>
-  <%_ if (allMandatory.lenght === 0) { _%> 
-    <p-accordion>
-      <p-accordionTab [transitionOptions]="'280ms cubic-bezier(0.4, 0, 0.2, 1)'">
-        <ng-template pTemplate="header">
-          <span fxLayout="row" fxLayoutGap="0.5rem">
-            <i class="pi pi-filter"></i>
-            <span class="filter-text">Filter</span>
-          </span>
-        </ng-template>
-  
-        <div fxLayout="row wrap" fxLayoutGap="10px">
-          <div
-            fxLayout="row wrap"
-            fxLayoutGap="0.75rem"
-            fxFlex
-            fxLayoutAlign="start center"
-          >
-          <%_ fields.forEach(function(f){ _%>
-            <%_ if (f.name != 'id' && f.relation == undefined && f.searchable) { _%> 
-                <div class="p-field">
-                  <span class="p-float-label p-input-icon-right">
-                    <%_ if (f.dbType.includes('string')) { _%> 
-                        <input
-                          id="<%= f.name %>"
-                          type="text"
-                          class="p-inputtext-sm"
-                          pInputText
-                          [(ngModel)]="search['<%= f.name %>']"
-                        />
-                    <%_ } _%>
-                    <label for="<%= f.name %>"><%= f.header %> </label>
-                    <i class="pi pi-times clear" (click)="filter['<%= f.name %>'] = undefined; search()"></i>
-                  </span>
-                </div>
-            <%_ }_%> 
-         <%_ }); _%> 
+  <%_ } _%> <%_ if (allMandatory.length === 0 || !allMandatory) { _%>
+  <p-accordion>
+    <p-accordionTab [transitionOptions]="'280ms cubic-bezier(0.4, 0, 0.2, 1)'">
+      <ng-template pTemplate="header">
+        <span fxLayout="row" fxLayoutGap="0.5rem">
+          <i class="pi pi-filter"></i>
+          <span class="filter-text">Filter</span>
+        </span>
+      </ng-template>
 
-      <%_ relations.forEach(function(r){ _%>
-        <%_ if (r.type === 'mt1') { _%> 
-            <div class="p-field">
-              <span class="p-float-label">
-                <p-dropdown id="<%= r.name %>" 
-                  optionValue="id" 
-                  optionLabel="name" 
-                  [autoDisplayFirst]="false"
-                  (onChange)="onSearch()"
-                  [showClear]="true"
-                  [filter]="true" 
-                  [options]="<%= r.rlCamelPlural %>!" 
-                  [(ngModel)]="search['<%= r.name %>']"
-                  ></p-dropdown>
-                <label for="<%= r.name %>"><%= r.header %> </label>
-              </span>
-            </div>
-        <%_ } _%>
-      <%_ }); _%>
-      <%_ enums.forEach(function(e){ _%>
-        <%_ if(allMandatory.indexOf(e.name) === -1) _%>
+      <div fxLayout="row wrap" fxLayoutGap="10px">
+        <div fxLayout="row wrap" fxLayoutGap="0.75rem" fxFlex fxLayoutAlign="start center">
+          <%_ fields.forEach(function(f){ _%> <%_ if (f.name != 'id' && f.relation == undefined && f.searchable) { _%>
+          <div class="p-field">
+            <span class="p-float-label p-input-icon-right">
+              <%_ if (f.dbType.includes('string')) { _%>
+              <input id="<%= f.name %>" type="text" class="p-inputtext-sm" pInputText [(ngModel)]="search['<%= f.name %>']" />
+              <%_ } _%>
+              <label for="<%= f.name %>"><%= f.header %> </label>
+              <i class="pi pi-times clear" (click)="search['<%= f.name %>'] = undefined; onSearch()"></i>
+            </span>
+          </div>
+          <%_ }_%> <%_ }); _%> <%_ relations.forEach(function(r){ _%> <%_ if (r.type === 'mt1') { _%>
+          <div class="p-field">
+            <span class="p-float-label">
+              <p-dropdown
+                id="<%= r.name %>"
+                optionValue="id"
+                optionLabel="name"
+                [autoDisplayFirst]="false"
+                (onChange)="onSearch()"
+                [showClear]="true"
+                [filter]="true"
+                [options]="<%= r.rlCamelPlural %>!"
+                [(ngModel)]="search['<%= r.name %>']"
+              ></p-dropdown>
+              <label for="<%= r.name %>"><%= r.header %> </label>
+            </span>
+          </div>
+          <%_ } _%> <%_ }); _%> <%_ enums.forEach(function(e){ _%> <%_ if(allMandatory.indexOf(e.name) === -1) { _%>
           <div class="p-field" fxFlex>
             <span class="p-float-label">
               <p-dropdown
@@ -227,29 +170,17 @@
               <label for="<%= e.name %>"><%= e.header %> </label>
             </span>
           </div>
-        <%_ } _%>
-      <%_ }) _%>
-      </div>
-          <div fxLayout="row" fxLayoutGap="4px" fxLayoutAlign="end center">
-            <button
-              pButton
-              class="p-button-text p-button-plain"
-              icon="pi pi-times"
-              label="Clear"
-              (click)="clearSearch()"
-            ></button>
-            <button
-              pButton
-              class="p-button-text p-button-plain"
-              icon="pi pi-search"
-              label="Search"
-              (click)="search()"
-            ></button>
-          </div>
+          <%_ } _%> <%_ }) _%>
         </div>
-      </p-accordionTab>
-    </p-accordion>
+        <div fxLayout="row" fxLayoutGap="4px" fxLayoutAlign="end center">
+          <button pButton class="p-button-text p-button-plain" icon="pi pi-times" label="Clear" (click)="clearSearch()"></button>
+          <button pButton class="p-button-text p-button-plain" icon="pi pi-search" label="Search" (click)="onSearch()"></button>
+        </div>
+      </div>
+    </p-accordionTab>
+  </p-accordion>
   <%_ } _%>
+
   <!-- Table Panel -->
   <p-card>
     <p-table
@@ -273,14 +204,13 @@
             pButton
             icon="pi pi-plus"
             class="p-button-raised"
-            [disabled]="            
-                <%_ allMandatory.forEach(function(m, idx, array){ _%>
-                  <%= '!'+m %>
-                  <%_ if (idx !== array.length - 1){ _%>
-                    <%= '||' %>
-                  <%_ } _%>
-                <%_ }) _%>
-              "
+            [disabled]=" 
+            <%_ allMandatory.forEach(function(m, idx, array){ _%>
+              <%= '!'+m %>
+              <%_ if (idx !== array.length - 1){ _%>
+                <%= '||' %>
+              <%_ } _%>
+            <%_ }) _%>"
             (click)="createOrUpdate()"
             label="Add <%= entityName %>"
           ></button>
@@ -288,12 +218,8 @@
       </ng-template>
       <ng-template pTemplate="header" let-columns>
         <tr *ngIf="<%= camelPluralEntityName %>?.length">
-          <th
-            *ngFor="let col of columns"
-            [pSortableColumn]="col.sort ? col.field : null"
-          >
-            {{ col.header
-            }}<p-sortIcon *ngIf="col.sort" [field]="col.field"></p-sortIcon>
+          <th *ngFor="let col of columns" [pSortableColumn]="col.sort ? col.field : null">
+            {{ col.header }}<p-sortIcon *ngIf="col.sort" [field]="col.field"></p-sortIcon>
           </th>
           <th style="flex: 0 0 2rem"></th>
         </tr>
@@ -305,13 +231,26 @@
           </td>
           <td style="flex: 0 0 2 rem">
             <div fxLayout="row" fxLayoutAlign="end">
-              <button
-                mat-icon-button
-                [matMenuTriggerFor]="menu"
-                [matMenuTriggerData]="{ id: rowData.id, element: rowData }"
-              >
-                <mat-icon>more_vert</mat-icon>
-              </button>
+              <div fxLayout="row" fxLayoutGap="2px">
+                <button
+                  pButton
+                  pTooltip="Edit"
+                  tooltipPosition="bottom"
+                  class="p-button-text p-button-plain p-button-rounded p-button-icon"
+                  icon="pi pi-pencil
+              "
+                  (click)="createOrUpdate(rowData)"
+                ></button>
+                <button
+                  pButton
+                  pTooltip="Delete"
+                  tooltipPosition="bottom"
+                  class="p-button-text p-button-plain p-button-rounded p-button-icon"
+                  icon="pi pi-trash
+              "
+                  (click)="delete(rowData)"
+                ></button>
+              </div>
             </div>
           </td>
         </tr>
@@ -333,31 +272,9 @@
   </p-card>
 </div>
 
-<mat-menu #menu="matMenu">
-  <ng-template matMenuContent let-id="id" let-element="element">
-    <div fxLayout="column" fxLayoutGap="10px">
-      <button
-        pButton
-        class="p-button-text p-button-plain"
-        icon="pi pi-pencil
-      "
-        label="Edit"
-        (click)="createOrUpdate(element)"
-      ></button>
-      <button
-        pButton
-        class="p-button-text p-button-plain"
-        icon="pi pi-trash
-      "
-        label="Delete"
-        (click)="delete(element)"
-      ></button>
-    </div>
-  </ng-template>
-</mat-menu>
 <p-confirmDialog
   [breakpoints]="{ '960px': '75vw', '640px': '100vw' }"
   [style]="{ width: '50vw' }"
-  header="Confirm Delete <%= entityName %>"
+  header="Confirmation Delete <%= entityName %>"
   icon="pi pi-exclamation-triangle"
 ></p-confirmDialog>

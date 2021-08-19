@@ -5,7 +5,9 @@ import { finalize } from 'rxjs/operators';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 import { CustomResponse } from '../../../utils/custom-response';
-
+<%_ if(enums.length > 0) { _%>
+import { EnumService, PlanrepEnum } from 'src/app/shared/enum.service';
+<%_ } _%>
 <%_ relations.forEach(function(r){ _%>
   import { <%= r.rlCap %> } from 'src/app/setup/<%= r.rlSnake %>/<%= r.rlSnake %>.model';  
   import { <%= r.rlCap %>Service } from 'src/app/setup/<%= r.rlSnake %>/<%= r.rlSnake %>.service';  
@@ -27,15 +29,19 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
     <%= r.rlCamelPlural %>?: <%= r.rlCap %>[] = [];  
   <%_ }); _%>
 
+  <%_ enums.forEach(function(e){ _%>
+    <%= e.eCamelPlural %>?: string[] = [];  
+  <%_ }); _%>
+
   /**
    * Declare form
    */
   editForm = this.fb.group({
    <%_ fields.forEach(function(f){ _%>
       <%=f.name %>: [null, 
-      <%_ if (f.validations !== undefined) { _%>
+      <%_ if (f.validations !== undefined || allMandatory.includes(f.name)) { _%>
         [
-          <%_  if(f.validations.includes('required')){_%>Validators.required,<%_}_%> 
+          <%_  if(f.validations.includes('required') || allMandatory.includes(f.name)){_%>Validators.required,<%_}_%> 
         ]
         <%_}_%>],
     <%_ }); _%>
@@ -49,12 +55,18 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
     public dialogRef: DynamicDialogRef,
     public dialogConfig: DynamicDialogConfig,
     protected fb: FormBuilder,
-    private toastService: ToastService
+    private toastService: ToastService,
+    <%_ if(enums.length > 0) { _%>
+      protected enumService: EnumService
+    <%_}_%>
   ) {}
 
   ngOnInit(): void {
     <%_ relations.forEach(function(r){ _%>
       this.<%= r.rlCamel %>Service.query().subscribe((resp: CustomResponse<<%= r.rlCap %>[]>) => this.<%= r.rlCamelPlural %>=resp.data)
+    <%_ }); _%>
+    <%_ enums.forEach(function(e){ _%>
+      this.<%= e.eCamelPlural %>=this.enumService.get('<%=e.name%>');
     <%_ }); _%>
     this.updateForm(this.dialogConfig.data); //Initilize form with data from dialog
   }

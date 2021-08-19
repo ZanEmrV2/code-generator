@@ -44,7 +44,6 @@
                     <%_ if (r.type === 'mt1') { _%> 
                       <p-dropdown id="<%= r.name %>" optionValue="id" optionLabel="name" 
                         [autoDisplayFirst]="false" 
-                        [showClear]="true"
                         [filter]="true"
                         optionValue="id"
                         optionLabel="name"
@@ -55,13 +54,37 @@
                 </span>
                 <%_ if (r.validations !== undefined) { _%>
                   <span *ngIf="editForm.get('<%= r.name %>')!.invalid && (editForm.get('<%= r.name %>')!.dirty || editForm.get('<%= r.name %>')!.touched || formError)">
-                  <%_  if(r.validations.includes('required')){_%>
+                  <%_  if(r.validations.includes('required') || allMandatory.includes(f.name)){_%>
                       <small class="p-error" *ngIf="editForm.get('<%= r.name %>')?.errors?.required"><%= r.header %> is required.</small>
                   <%_ } _%>
                   </span>
               <%_ } _%>
                 </div>
     <%_ }); _%>
+    <%_ enums.forEach(function(e){ _%>
+        <div class="p-field" fxFlex>
+          <span class="p-float-label">
+            <p-dropdown
+              id="<%= e.name %>"
+              optionValue="value"
+              optionLabel="display"
+              [autoDisplayFirst]="false"
+              [filter]="true"
+              class="p-inputtext-sm"
+              [options]="<%= e.eCamelPlural %>!"
+              formControlName="<%= e.name %>"
+            ></p-dropdown>
+            <label for="<%= e.name %>"><%= e.header %> </label>
+          </span>
+          <%_ if (e.validations !== undefined || allMandatory.includes(e.name)) { _%>
+            <span *ngIf="editForm.get('<%= e.name %>')!.invalid && (editForm.get('<%= e.name %>')!.dirty || editForm.get('<%= e.name %>')!.touched || formError)">
+            <%_  if(e.validations.includes('required') || allMandatory.includes(e.name)){_%>
+                <small class="p-error" *ngIf="editForm.get('<%= e.name %>')?.errors?.required"><%= e.header %> is required.</small>
+            <%_ } _%>
+            </span>
+        <%_ } _%>
+        </div>
+    <%_ }) _%>
       <div fxLayout="row" fxLayoutGap="0.75rem">
         <span fxFlex></span>
         <button

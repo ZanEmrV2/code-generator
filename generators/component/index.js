@@ -54,8 +54,12 @@ module.exports = class extends Generator {
   fieldPath;
   fields = [];
   relations = [];
+  enums = [];
   rawRelations = [];
+  rawEnums = [];
   mandatory = [];
+  mandatoryEnums = [];
+  allMandatory = [];
   parentFolder;
   capEntityName;
   snakeEntityName; //dashed(-) snake entity name
@@ -74,7 +78,12 @@ module.exports = class extends Generator {
     await this._getEntityName();
     await this._getParentFolderName();
     await this._getFields();
-    await this._getMandator();
+    if (this.rawRelations.length) {
+      await this._getMandator();
+    }
+    if (this.rawEnums.length) {
+      await this._getMandatoEnums();
+    }
   }
 
   async _getEntityName() {
@@ -144,22 +153,38 @@ module.exports = class extends Generator {
       });
     }
     this.rawRelations = this.fields.filter(f => f.relation != undefined);
+    this.rawEnums = this.fields.filter(f => f.dbType == 'enum');
   }
 
   async _getMandator() {
-    this.log(this.rawRelations);
     const choices = this.rawRelations.map(r => {
       return {
         name: r.name.replace('_id', ''),
         value: r.name,
       };
     });
-    this.log(choices);
     this.mandatory = await this.prompt([
       {
         type: 'checkbox',
         name: 'filters',
         message: 'Select Mandatory Filters',
+        choices,
+      },
+    ]);
+  }
+
+  async _getMandatoEnums() {
+    const choices = this.rawEnums.map(r => {
+      return {
+        name: r.name,
+        value: r.name,
+      };
+    });
+    this.mandatoryEnums = await this.prompt([
+      {
+        type: 'checkbox',
+        name: 'filters',
+        message: 'Select Mandatory Enums Filters',
         choices,
       },
     ]);
@@ -174,23 +199,20 @@ module.exports = class extends Generator {
     this._generateComponent();
     this._generateComponentUpdate();
     this._updateRoute();
+    this._updateMenu();
   }
 
   _init() {
     this.parentFolder = this.parentFolderInput.name.toLowerCase();
     const e = this.entityNameInput.name.replace('.json', '').replace('_', '').replace('-', '');
+    const fname = this.entityNameInput.name.replace('.json', '');
     this.capEntityName = e.charAt(0).toUpperCase() + e.slice(1);
     this.camelEntityName = this.capEntityName.charAt(0).toLowerCase() + e.slice(1);
     this.camelPluralEntityName = pluralize(this.camelEntityName);
-    this.entityName = _.startCase(this.capEntityName);
-    this.entityNamePlural = pluralize(entityName);
-    this.snakeEntityName = this.capEntityName.replace(/[A-Z]/g, (letter, index) => {
-      return index == 0 ? letter.toLowerCase() : '-' + letter.toLowerCase();
-    });
-    const _resourcePath = this.capEntityName.replace(/[A-Z]/g, (letter, index) => {
-      return index == 0 ? letter.toLowerCase() : '_' + letter.toLowerCase();
-    });
-    this.resourcePath = pluralize(_resourcePath);
+    this.entityName = _.startCase(fname.replace('_', ' '));
+    this.entityNamePlural = pluralize(this.entityName);
+    this.snakeEntityName = fname.replace('_', '-');
+    this.resourcePath = pluralize(fname);
     this.fields = this.fields.map(f => {
       return {
         ...f,
@@ -213,7 +235,7 @@ module.exports = class extends Generator {
         return index == 0 ? letter.toLowerCase() : '-' + letter.toLowerCase();
       });
       const rlCamelPlural = pluralize(rlCamel);
-
+      const mandatory = this.mandatory.indexOf(r.name) !== 1;
       return {
         ...r,
         rlCap,
@@ -221,9 +243,35 @@ module.exports = class extends Generator {
         rlCamel,
         rlSnake,
         rlCamelPlural,
+        mandatory,
       };
     });
-    this.log(this.mandatory);
+
+    this.enums = this.rawEnums.map(e => {
+      const type = 'enum';
+      let eCap = '';
+      let n = e.name.replace('_id', '');
+      let nArray = n.split('_');
+      nArray.forEach(w => (eCap = eCap + w.charAt(0).toUpperCase() + w.slice(1)));
+      const eCamel = eCap.charAt(0).toLowerCase() + eCap.slice(1);
+      const eSnake = eCap.replace(/[A-Z]/g, (letter, index) => {
+        return index == 0 ? letter.toLowerCase() : '-' + letter.toLowerCase();
+      });
+      const eCamelPlural = pluralize(eCamel);
+      const mandatory = this.mandatoryEnum.indexOf(e.name) !== 1;
+      return {
+        ...e,
+        eCap,
+        type,
+        eCamel,
+        eSnake,
+        eCamelPlural,
+        mandatory,
+      };
+    });
+    this.mandatory = this.mandatory || [];
+    this.mandatoryEnums = this.mandatoryEnums || [];
+    this.allMandatory = this.mandatory.concat(this.mandatoryEnums);
   }
 
   _generateModule() {
@@ -268,6 +316,7 @@ module.exports = class extends Generator {
         snakeEntityName: this.snakeEntityName,
         camelEntityName: this.camelEntityName,
         resourcePath: this.resourcePath,
+        entityNamePlural: this.entityNamePlural,
       }
     );
   }
@@ -284,6 +333,11 @@ module.exports = class extends Generator {
         camelEntityName: this.camelEntityName,
         camelPluralEntityName: this.camelPluralEntityName,
         entityName: this.entityName,
+        mandatory: this.mandatory,
+        allMandatory: this.allMandatory,
+        enums: this.enums,
+        mandatoryEnums: this.mandatoryEnums,
+        entityNamePlural: this.entityNamePlural,
       }
     );
     this.fs.copyTpl(
@@ -297,6 +351,11 @@ module.exports = class extends Generator {
         camelEntityName: this.camelEntityName,
         camelPluralEntityName: this.camelPluralEntityName,
         entityName: this.entityName,
+        mandatory: this.mandatory,
+        allMandatory: this.allMandatory,
+        enums: this.enums,
+        mandatoryEnums: this.mandatoryEnums,
+        entityNamePlural: this.entityNamePlural,
       }
     );
   }
@@ -313,6 +372,11 @@ module.exports = class extends Generator {
         camelEntityName: this.camelEntityName,
         camelPluralEntityName: this.camelPluralEntityName,
         entityName: this.entityName,
+        mandatory: this.mandatory,
+        allMandatory: this.allMandatory,
+        enums: this.enums,
+        mandatoryEnums: this.mandatoryEnums,
+        entityNamePlural: this.entityNamePlural,
       }
     );
     this.fs.copyTpl(
@@ -326,6 +390,11 @@ module.exports = class extends Generator {
         camelEntityName: this.camelEntityName,
         camelPluralEntityName: this.camelPluralEntityName,
         entityName: this.entityName,
+        mandatory: this.mandatory,
+        allMandatory: this.allMandatory,
+        enums: this.enums,
+        mandatoryEnums: this.mandatoryEnums,
+        entityNamePlural: this.entityNamePlural,
       }
     );
   }
@@ -343,6 +412,23 @@ module.exports = class extends Generator {
     },\n`;
     if (!file.includes(this.snakeEntityName)) {
       const insert = route + hook;
+      this.fs.write(path, file.replace(hook, insert));
+    } else {
+      this.log('Route exist, skipping');
+    }
+  }
+
+  async _updateMenu() {
+    const path = this.destinationPath('src/app/layout/main/main.component.ts');
+    let file = this.fs.read(path);
+    const hook = `/**====Planrep ${this.parentFolder} Menu Generator Hook: Dont Delete====*/`;
+    const menuItem = `{
+      label: '${this.entityNamePlural}',
+      icon: 'pi pi-fw pi-arrow-right',
+      routerLink: '${this.snakeEntityName}',
+    },\n`;
+    if (!file.includes(this.snakeEntityName)) {
+      const insert = menuItem + hook;
       this.fs.write(path, file.replace(hook, insert));
     } else {
       this.log('Route exist, skipping');

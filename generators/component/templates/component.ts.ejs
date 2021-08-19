@@ -47,7 +47,11 @@ export class <%= capEntityName %>Component implements OnInit {
       { 
         field: '<%= f.name %>', 
         header:'<%= f.header %>',
-        sort: '<%_ (f.relation == undefined) ? true : false _%>'  
+        sort: <%_ if (f.searchable) { _%>
+           <%=true%>
+          <%_} else { _%>
+            <%=false%>
+         <%_ } _%>  
       },
     <%_ } _%>
   <%_ }); _%>
@@ -65,10 +69,10 @@ export class <%= capEntityName %>Component implements OnInit {
   //Mandatory filter
   <%_ mandatory.forEach(function(m){ _%>
     m!: number;
-  <%_ }) _%>
+  <%_ }); _%>
   <%_ mandatoryEnums.forEach(function(e){ _%>
     m!: string;
-  <%_ }) _%>
+  <%_ }); _%>
 
   constructor(
     protected <%= camelEntityName %>Service: <%= capEntityName %>Service,
@@ -83,7 +87,7 @@ export class <%= capEntityName %>Component implements OnInit {
     protected toastService: ToastService,
     <%_ if(enums.length > 0) { _%>
       protected enumService: EnumService
-    <%_}_%>
+    <%_ } _%>
   ) {}
 
   ngOnInit(): void {
@@ -102,14 +106,16 @@ export class <%= capEntityName %>Component implements OnInit {
    * @param dontNavigate = if after successfuly update url params with pagination and sort info
    */
   loadPage(page?: number, dontNavigate?: boolean): void {
-    if ( <%_ allMandatory.forEach(function(m, idx, array){ _%>
-      <%= '!'+m %>
-      <%_ if (idx !== array.length - 1){ _%>
-        <%= '||' %>
-      <%_ } _%>
-    <%_ }) _%>) {
-      return;
-    }
+    <%_ if (allMandatory.lenght > 0) { _%> 
+      if ( <%_ allMandatory.forEach(function(m, idx, array){ _%>
+        <%= '!'+m %>
+        <%_ if (idx !== array.length - 1){ _%>
+          <%= '||' %>
+        <%_ } _%>
+      <%_ }) _%>) {
+        return;
+      }
+    <%_ } _%>
     this.isLoading = true;
     const pageToLoad: number = page ?? this.page ?? 1;
     this.per_page = this.per_page ?? ITEMS_PER_PAGE;
@@ -156,7 +162,7 @@ export class <%= capEntityName %>Component implements OnInit {
         this.ascending = ascending;
       <%_ if (allMandatory.lenght === 0) { _%> 
           this.loadPage(this.page, true);
-      <%_ if (allMandatory.lenght === 0) } _%> 
+      <%_ } _%> 
       }
     });
   }
