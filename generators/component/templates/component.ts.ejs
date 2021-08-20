@@ -99,7 +99,7 @@ export class <%= capEntityName %>Component implements OnInit {
 
   ngOnInit(): void {
     <%_ relations.forEach(function(r){ _%>
-      this.<%= r.rlCamel %>Service.query().subscribe((resp: CustomResponse<<%= r.rlCap %>[]>) => this.<%= r.rlCamelPlural %>=resp.data)
+      this.<%= r.rlCamel %>Service.query({columns:['id', 'name']}).subscribe((resp: CustomResponse<<%= r.rlCap %>[]>) => this.<%= r.rlCamelPlural %>=resp.data)
     <%_ }); _%>
     <%_ enums.forEach(function(e){ _%>
       this.<%= e.eCamelPlural %>=this.enumService.get('<%=e.eCamelPlural%>');
