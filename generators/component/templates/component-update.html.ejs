@@ -8,7 +8,7 @@
   >
     <div fxLayout="column" fxLayoutGap="1rem">
       <%_ fields.forEach(function(f){ _%>
-        <%_ if (f.name != 'id' && f.relation === undefined && f.dbType !== 'enum' && !f.dbType.includes('boolean')) { _%> 
+        <%_ if (f.name != 'id' && f.relation === undefined && f.dbType !== 'enum' && !f.dbType.includes('boolean') && !f.dbType.includes('json')) { _%> 
                 <div class="p-field p-col-12 p-md-4" fxFlex>
                 <span class="p-float-label">
                     <%_ if (f.dbType.includes('string')) { _%> 
@@ -24,7 +24,7 @@
                       <p-inputNumber id="<%= f.name %>" formControlName="<%= f.name %>" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2"></p-inputNumber>
                     <%_ } _%>
                     <%_ if (f.dbType.includes('date')) { _%> 
-                      <p-calendar id="<%= f.name %>" formControlName="<%= f.name %>"></p-calendar>
+                      <p-calendar appendTo="body" id="<%= f.name %>" formControlName="<%= f.name %>"></p-calendar>
                     <%_ } _%>
                     <label for="<%= f.name %>"><%= f.header %> </label>
                 </span>
@@ -40,13 +40,14 @@
         <%_ if (f.name != 'id' && f.relation === undefined && f.dbType !== 'enum' && f.dbType.includes('boolean')) { _%> 
           <div fxLayout="row" fxLayoutGap="2px">
           <p-inputSwitch
-          id="<%= f.name %>"
-          name="<%= f.name %>"
-          formControlName="<%= f.name %>"
-        ></p-inputSwitch>
-        <label for="<%= f.name %>"><%= f.header %> </label>
-      </div>
+            id="<%= f.name %>"
+            name="<%= f.name %>"
+            formControlName="<%= f.name %>"
+          ></p-inputSwitch>
+          <label for="<%= f.name %>"><%= f.header %> </label>
+        </div>
       <%_ } _%>
+     
     <%_ }); _%>
     <%_ relations.forEach(function(r){ _%>
                 <div class="p-field" fxFlex>
@@ -93,6 +94,31 @@
             <span *ngIf="editForm.get('<%= e.name %>')!.invalid && (editForm.get('<%= e.name %>')!.dirty || editForm.get('<%= e.name %>')!.touched || formError)">
             <%_  if(e.validations.includes('required') || allMandatory.includes(e.name)){_%>
                 <small class="p-error" *ngIf="editForm.get('<%= e.name %>')?.errors?.required"><%= e.header %> is required.</small>
+            <%_ } _%>
+            </span>
+        <%_ } _%>
+        </div>
+    <%_ }) _%>
+    <%_ jsons.forEach(function(j){ _%>
+        <div class="p-field" fxFlex>
+          <span class="p-float-label">
+            <p-multiSelect 
+              [options]="<%= j.jCamelPlural %>!" 
+              formControlName="<%= j.name %>" 
+              optionLabel="name" 
+              optionValue="id"
+              [autoDisplayFirst]="false"
+              [filter]="true"
+              class="p-inputtext-sm"
+              appendTo="body"
+              >
+           </p-multiSelect>
+           <label for="<%= j.name %>"><%= j.header %> </label>
+          </span>
+          <%_ if ((j.validations !== null && j.validations !== undefined) || allMandatory.includes(j.name)) { _%>
+            <span *ngIf="editForm.get('<%= j.name %>')!.invalid && (editForm.get('<%= j.name %>')!.dirty || editForm.get('<%= j.name %>')!.touched || formError)">
+            <%_  if(j.validations.includes('required') || allMandatory.includes(j.name)){_%>
+                <small class="p-error" *ngIf="editForm.get('<%= j.name %>')?.errors?.required"><%= j.header %> is required.</small>
             <%_ } _%>
             </span>
         <%_ } _%>
