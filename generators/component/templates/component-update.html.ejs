@@ -53,11 +53,11 @@
                 <div class="p-field" fxFlex>
                 <span class="p-float-label">
                     <%_ if (r.type === 'mt1') { _%> 
-                      <p-dropdown id="<%= r.name %>" optionValue="id" optionLabel="name" 
+                      <p-dropdown id="<%= r.name %>" 
+                        optionValue="id" 
+                        optionLabel="name" 
                         [autoDisplayFirst]="false" 
                         [filter]="true"
-                        optionValue="id"
-                        optionLabel="name"
                         class="p-inputtext-sm"
                         appendTo="body"
                         [options]="<%= r.rlCamelPlural %>!" 
@@ -107,7 +107,6 @@
               formControlName="<%= j.name %>" 
               optionLabel="name" 
               optionValue="id"
-              [autoDisplayFirst]="false"
               [filter]="true"
               class="p-inputtext-sm"
               appendTo="body"
