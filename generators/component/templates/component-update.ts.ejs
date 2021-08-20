@@ -19,6 +19,10 @@ import { EnumService, PlanrepEnum } from 'src/app/shared/enum.service';
   import { <%= r.rlCap %> } from 'src/app/setup/<%= r.rlSnake %>/<%= r.rlSnake %>.model';  
   import { <%= r.rlCap %>Service } from 'src/app/setup/<%= r.rlSnake %>/<%= r.rlSnake %>.service';  
 <%_ }); _%>
+<%_ jsons.forEach(function(j){ _%>
+  import { <%= j.jlCap %> } from 'src/app/setup/<%= j.jlSnake %>/<%= j.jlSnake %>.model';  
+  import { <%= j.jlCap %>Service } from 'src/app/setup/<%= j.jlSnake %>/<%= j.jlSnake %>.service';  
+<%_ }); _%>
 import { <%= capEntityName %> } from '../<%= snakeEntityName %>.model';
 import { <%= capEntityName %>Service } from '../<%= snakeEntityName %>.service';
 import { ToastService } from 'src/app/shared/toast.service';
@@ -35,7 +39,9 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
   <%_ relations.forEach(function(r){ _%>
     <%= r.rlCamelPlural %>?: <%= r.rlCap %>[] = [];  
   <%_ }); _%>
-
+  <%_ jsons.forEach(function(j){ _%>
+    <%= j.jlCamelPlural %>?: <%= j.jlCap %>[] = [];  
+  <%_ }); _%>
   <%_ enums.forEach(function(e){ _%>
     <%= e.eCamelPlural %>?: PlanrepEnum[] = [];  
   <%_ }); _%>
@@ -59,6 +65,9 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
     <%_ relations.forEach(function(r){ _%>
       protected <%= r.rlCamel %>Service: <%= r.rlCap %>Service,
     <%_ }); _%>
+    <%_ jsons.forEach(function(j){ _%>
+      protected <%= j.jlCamel %>Service: <%= j.jlCap %>Service,
+    <%_ }); _%>
     public dialogRef: DynamicDialogRef,
     public dialogConfig: DynamicDialogConfig,
     protected fb: FormBuilder,
@@ -71,6 +80,9 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
   ngOnInit(): void {
     <%_ relations.forEach(function(r){ _%>
       this.<%= r.rlCamel %>Service.query().subscribe((resp: CustomResponse<<%= r.rlCap %>[]>) => this.<%= r.rlCamelPlural %>=resp.data)
+    <%_ }); _%>
+    <%_ jsons.forEach(function(j){ _%>
+      this.<%= j.jlCamel %>Service.query().subscribe((resp: CustomResponse<<%= j.jlCap %>[]>) => this.<%= j.jlCamelPlural %>=resp.data)
     <%_ }); _%>
     <%_ enums.forEach(function(e){ _%>
       this.<%= e.eCamelPlural %>=this.enumService.get('<%=e.eCamelPlural%>');
