@@ -57,6 +57,8 @@ module.exports = class extends Generator {
   enums = [];
   rawRelations = [];
   rawEnums = [];
+  rawJsons = [];
+  jsons = [];
   mandatory = [];
   mandatoryEnums = [];
   allMandatory = [];
@@ -154,6 +156,7 @@ module.exports = class extends Generator {
     }
     this.rawRelations = this.fields.filter(f => f.relation != undefined);
     this.rawEnums = this.fields.filter(f => f.dbType === 'enum');
+    this.rawJsons = this.fields.filter(f => f.dbType === 'json');
   }
 
   async _getMandator() {
@@ -282,6 +285,31 @@ module.exports = class extends Generator {
         header: _.startCase(e.name).replace('Id', ''),
       };
     });
+
+    this.jsons = this.rawJsons.map(j => {
+      const type = 'json';
+      let jCap = '';
+      let n = j.name.replace('_ids', '').replace('_id', '');
+      let nArray = n.split('_');
+      nArray.forEach(w => (jCap = jCap + w.charAt(0).toUpperCase() + w.slice(1)));
+      const jCamel = jCap.charAt(0).toLowerCase() + jCap.slice(1);
+      const jSnake = jCap.replace(/[A-Z]/g, (letter, index) => {
+        return index == 0 ? letter.toLowerCase() : '-' + letter.toLowerCase();
+      });
+      const jCamelPlural = pluralize(jCamel);
+      const mandatory = this.mandatoryEnums.indexOf(j.name) !== 1;
+      return {
+        ...j,
+        jCap,
+        type,
+        jCamel,
+        jSnake,
+        jCamelPlural,
+        mandatory,
+        header: _.startCase(j.name).replace('Id', ''),
+      };
+    });
+    console.log(this.jsons);
     this.allMandatory = this.mandatory.concat(this.mandatoryEnums);
   }
 
@@ -349,6 +377,7 @@ module.exports = class extends Generator {
         enums: this.enums,
         mandatoryEnums: this.mandatoryEnums,
         entityNamePlural: this.entityNamePlural,
+        jsons: this.jsons,
       }
     );
     this.fs.copyTpl(
@@ -367,6 +396,7 @@ module.exports = class extends Generator {
         enums: this.enums,
         mandatoryEnums: this.mandatoryEnums,
         entityNamePlural: this.entityNamePlural,
+        jsons: this.jsons,
       }
     );
   }
@@ -388,6 +418,7 @@ module.exports = class extends Generator {
         enums: this.enums,
         mandatoryEnums: this.mandatoryEnums,
         entityNamePlural: this.entityNamePlural,
+        jsons: this.jsons,
       }
     );
     this.fs.copyTpl(
@@ -406,6 +437,7 @@ module.exports = class extends Generator {
         enums: this.enums,
         mandatoryEnums: this.mandatoryEnums,
         entityNamePlural: this.entityNamePlural,
+        jsons: this.jsons,
       }
     );
   }

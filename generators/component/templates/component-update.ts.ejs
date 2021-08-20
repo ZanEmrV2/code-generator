@@ -20,8 +20,8 @@ import { EnumService, PlanrepEnum } from 'src/app/shared/enum.service';
   import { <%= r.rlCap %>Service } from 'src/app/setup/<%= r.rlSnake %>/<%= r.rlSnake %>.service';  
 <%_ }); _%>
 <%_ jsons.forEach(function(j){ _%>
-  import { <%= j.jlCap %> } from 'src/app/setup/<%= j.jlSnake %>/<%= j.jlSnake %>.model';  
-  import { <%= j.jlCap %>Service } from 'src/app/setup/<%= j.jlSnake %>/<%= j.jlSnake %>.service';  
+  import { <%= j.jCap %> } from 'src/app/setup/<%= j.jSnake %>/<%= j.jSnake %>.model';  
+  import { <%= j.jCap %>Service } from 'src/app/setup/<%= j.jSnake %>/<%= j.jSnake %>.service';  
 <%_ }); _%>
 import { <%= capEntityName %> } from '../<%= snakeEntityName %>.model';
 import { <%= capEntityName %>Service } from '../<%= snakeEntityName %>.service';
@@ -40,7 +40,7 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
     <%= r.rlCamelPlural %>?: <%= r.rlCap %>[] = [];  
   <%_ }); _%>
   <%_ jsons.forEach(function(j){ _%>
-    <%= j.jlCamelPlural %>?: <%= j.jlCap %>[] = [];  
+    <%= j.jCamelPlural %>?: <%= j.jCap %>[] = [];  
   <%_ }); _%>
   <%_ enums.forEach(function(e){ _%>
     <%= e.eCamelPlural %>?: PlanrepEnum[] = [];  
@@ -66,7 +66,7 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
       protected <%= r.rlCamel %>Service: <%= r.rlCap %>Service,
     <%_ }); _%>
     <%_ jsons.forEach(function(j){ _%>
-      protected <%= j.jlCamel %>Service: <%= j.jlCap %>Service,
+      protected <%= j.jCamel %>Service: <%= j.jCap %>Service,
     <%_ }); _%>
     public dialogRef: DynamicDialogRef,
     public dialogConfig: DynamicDialogConfig,
@@ -82,7 +82,7 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
       this.<%= r.rlCamel %>Service.query().subscribe((resp: CustomResponse<<%= r.rlCap %>[]>) => this.<%= r.rlCamelPlural %>=resp.data)
     <%_ }); _%>
     <%_ jsons.forEach(function(j){ _%>
-      this.<%= j.jlCamel %>Service.query().subscribe((resp: CustomResponse<<%= j.jlCap %>[]>) => this.<%= j.jlCamelPlural %>=resp.data)
+      this.<%= j.jCamel %>Service.query().subscribe((resp: CustomResponse<<%= j.jCap %>[]>) => this.<%= j.jCamelPlural %>=resp.data)
     <%_ }); _%>
     <%_ enums.forEach(function(e){ _%>
       this.<%= e.eCamelPlural %>=this.enumService.get('<%=e.eCamelPlural%>');
