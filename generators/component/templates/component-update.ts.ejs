@@ -148,16 +148,16 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
   protected updateForm(<%= camelEntityName %>: <%= capEntityName %>): void {
     this.editForm.patchValue({
       <%_ fields.forEach(function(f){ _%>
-        <%_ !f.dbType.includes('json') && !f.dbType.includes('date') {_%>
+        <%_ if(!f.dbType.includes('json') && !f.dbType.includes('date')) {_%>
           <%=f.name %>: <%= camelEntityName %>.<%=f.name %>,
         <%_ } _%>
-        <%_ f.dbType.includes('date') {_%>
+        <%_ if (f.dbType.includes('date')) {_%>
           <%=f.name %>:
           <%= camelEntityName %>.<%=f.name %> !== undefined
             ? new Date(<%= camelEntityName %>.<%=f.name %>!)
             : <%= camelEntityName %>.<%=f.name %>,
         <%_ } _%>
-        <%_ f.dbType.includes('json') {_%>
+        <%_  if(f.dbType.includes('json')) {_%>
           <%=f.name %>:
           <%= camelEntityName %>.<%=f.name %> !== undefined
             ? JSON.parse(<%= camelEntityName %>.<%=f.name %>!)
@@ -175,7 +175,7 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
     return {
       ...new  <%= capEntityName %>(),
       <%_ fields.forEach(function(f){ _%>
-        <%_ f.dbType.includes('json') {_%>
+        <%_ if(f.dbType.includes('json')) {_%>
           <%=f.name %>:
           this.editForm.get(['<%=f.name %>'])!.value !== undefined
             ? JSON.stringify(
@@ -183,7 +183,7 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
               )
             : undefined,
         <%_ } _%>
-        <%_ !f.dbType.includes('json') {_%>
+        <%_ if(!f.dbType.includes('json')) {_%>
           <%=f.name %>: this.editForm.get(['<%=f.name %>'])!.value,
         <%_ } _%>
       <%_ }); _%>

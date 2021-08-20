@@ -24,7 +24,7 @@
                       <p-inputNumber id="<%= f.name %>" formControlName="<%= f.name %>" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2"></p-inputNumber>
                     <%_ } _%>
                     <%_ if (f.dbType.includes('date')) { _%> 
-                      <p-calendar appendTo="body" id="<%= f.name %>" formControlName="<%= f.name %>"></p-calendar>
+                      <p-calendar dataType="string" appendTo="body" id="<%= f.name %>" formControlName="<%= f.name %>"></p-calendar>
                     <%_ } _%>
                     <label for="<%= f.name %>"><%= f.header %> </label>
                 </span>
