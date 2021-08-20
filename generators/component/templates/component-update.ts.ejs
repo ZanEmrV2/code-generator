@@ -51,7 +51,12 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
    */
   editForm = this.fb.group({
    <%_ fields.forEach(function(f){ _%>
-      <%=f.name %>: [null, 
+      <%=f.name %>: [
+      <%_ if(f.dbType.includes('boolean')) {_%>
+        false,
+      <%_ } else { _%>
+        null, 
+      <%_ } _%>
       <%_ if (f.validations !== undefined || allMandatory.includes(f.name)) { _%>
         [
           <%_  if(f.validations !== null && f.validations.includes('required') || allMandatory.includes(f.name)){_%>Validators.required,<%_}_%> 
