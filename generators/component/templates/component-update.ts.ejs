@@ -87,11 +87,11 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
     <%_ enums.forEach(function(e){ _%>
       this.<%= e.eCamelPlural %>=this.enumService.get('<%=e.eCamelPlural%>');
     <%_ }); _%>
-    this.updateForm(this.dialogConfig.data); //Initilize form with data from dialog
+    this.updateForm(this.dialogConfig.data); //Initialize form with data from dialog
   }
 
   /**
-   * When form is valid Create <%= capEntityName %> or Update Facilitiy type if exist else set form has error and return
+   * When form is valid Create <%= capEntityName %> or Update Facility type if exist else set form has error and return
    * @returns
    */
   save(): void {
@@ -122,7 +122,7 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
   }
 
   /**
-   * When save successfully close dialog and dispaly info message
+   * When save successfully close dialog and display info message
    * @param result
    */
   protected onSaveSuccess(result: any): void {
@@ -131,8 +131,8 @@ export class <%= capEntityName %>UpdateComponent implements OnInit {
   }
 
   /**
-   * Error handiling specific to this component
-   * Note; general error handleing is done by ErrorInterceptor
+   * Error handling specific to this component
+   * Note; general error handling is done by ErrorInterceptor
    * @param error
    */
   protected onSaveError(error: any): void {}
