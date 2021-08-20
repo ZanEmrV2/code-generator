@@ -225,7 +225,7 @@ module.exports = class extends Generator {
     this.camelPluralEntityName = pluralize(this.camelEntityName);
     this.entityName = _.startCase(fname.replace('_', ' '));
     this.entityNamePlural = pluralize(this.entityName);
-    this.snakeEntityName = fname.replace('_', '-').replace('_', '-').replace('_', '-');
+    this.snakeEntityName = fname.replace('_', '-').replace('_', '-').replace('_', '-').replace('_', '-');
     this.resourcePath = pluralize(fname);
     this.fields = this.fields.map(f => {
       return {

@@ -24,7 +24,7 @@
                       <p-inputNumber id="<%= f.name %>" formControlName="<%= f.name %>" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2"></p-inputNumber>
                     <%_ } _%>
                     <%_ if (f.dbType.includes('date')) { _%> 
-                      <p-calendar appendTo="body" id="<%= f.name %>" formControlName="<%= f.name %>"></p-calendar>
+                      <p-calendar dataType="string" appendTo="body" id="<%= f.name %>" formControlName="<%= f.name %>"></p-calendar>
                     <%_ } _%>
                     <label for="<%= f.name %>"><%= f.header %> </label>
                 </span>
@@ -53,11 +53,11 @@
                 <div class="p-field" fxFlex>
                 <span class="p-float-label">
                     <%_ if (r.type === 'mt1') { _%> 
-                      <p-dropdown id="<%= r.name %>" optionValue="id" optionLabel="name" 
+                      <p-dropdown id="<%= r.name %>" 
+                        optionValue="id" 
+                        optionLabel="name" 
                         [autoDisplayFirst]="false" 
                         [filter]="true"
-                        optionValue="id"
-                        optionLabel="name"
                         class="p-inputtext-sm"
                         appendTo="body"
                         [options]="<%= r.rlCamelPlural %>!" 
@@ -107,7 +107,6 @@
               formControlName="<%= j.name %>" 
               optionLabel="name" 
               optionValue="id"
-              [autoDisplayFirst]="false"
               [filter]="true"
               class="p-inputtext-sm"
               appendTo="body"
