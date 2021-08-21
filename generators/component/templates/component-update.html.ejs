@@ -15,7 +15,7 @@
                       <input id="<%= f.name %>" type="text" pInputText formControlName="<%= f.name %>"> 
                     <%_ } _%>
                     <%_ if (f.dbType.includes('text')) { _%> 
-                      <textarea id="<%= f.name %>" formControlName="<%= f.name %>" [rows]="5" [cols]="30" pInputTextarea autoResize="autoResize"></textarea>
+                      <textarea id="<%= f.name %>" formControlName="<%= f.name %>" [rows]="5" [cols]="30" pInputTextarea [autoResize]="true"></textarea>
                     <%_ } _%>
                     <%_ if (f.dbType.includes('integer')) { _%> 
                       <p-inputNumber id="<%= f.name %>" formControlName="<%= f.name %>"></p-inputNumber>
