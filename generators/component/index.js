@@ -131,6 +131,10 @@ module.exports = class extends Generator {
             value: 'planning',
           },
           {
+            name: 'Budgeting',
+            value: 'budgeting',
+          },
+          {
             name: 'Execution',
             value: 'execution',
           },
