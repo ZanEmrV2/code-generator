@@ -1,0 +1,69 @@
+import axios from 'axios';
+import { useMutation, useQuery } from 'react-query';
+import { <%= capEntityName %> } from '.';
+import { createRequestParams, IApiParams } from '../../utils/utils';
+
+const resourceUrl = 'api/<%=snakeEntityName%>s';
+
+/**
+ * fetch <%=entityNamePlural%> by page, and optional filters
+ * @param IApiParams
+ * @returns UseQueryResult
+ */
+export const useFetch<%=capPluralEntityName%> = ({
+  queryParams,
+  onSuccess,
+  onError,
+}: IApiParams) => {
+  return useQuery<any>(
+    ['fetch<%=capPluralEntityName%>', queryParams],
+    () =>
+      axios.get(`${resourceUrl}`, { params: createRequestParams(queryParams) }),
+    {
+      onSuccess,
+      onError,
+    },
+  );
+};
+
+/**
+ * create new <%=capEntityName%> or updated existing <%=capEntityName%>
+ * <%= capEntityName %> to be created or updated is passed to mutate function param
+ * @param IApiParams
+ * @returns UseMutationResult
+ */
+export const useCreateOrUpdate<%= capEntityName %> = ({ onSuccess, onError }: IApiParams) => {
+  return useMutation<<%= capEntityName %>, any, <%= capEntityName %>>(
+    'create<%= capEntityName %>',
+    (<%=camelEntityName %>: <%= capEntityName %>) => (<%=camelEntityName %>.id ? update<%= capEntityName %>(<%=camelEntityName %>) : create<%= capEntityName %>(<%=camelEntityName %>)),
+    {
+      onSuccess,
+      onError,
+    },
+  );
+};
+
+/**
+ * Delete <%=capEntityName%>
+ * @param IApiParams
+ * @returns  UseMutationResult
+ */
+export const useDelete<%= capEntityName %> = ({ onSuccess, onError }: IApiParams) => {
+  return useMutation(
+    'detele<%= capEntityName %>',
+    (id: number) => axios.delete(`${resourceUrl}/${id}`),
+    {
+      onSuccess,
+      onError,
+    },
+  );
+};
+
+const create<%= capEntityName %> = (<%=camelEntityName %>: <%= capEntityName %>): any => {
+  return axios.post(`${resourceUrl}`, <%=camelEntityName %>);
+};
+
+const update<%= capEntityName %> = (<%=camelEntityName %>: <%= capEntityName %>): any => {
+  return axios
+    .put(`${resourceUrl}/${<%=camelEntityName %>.id}`, <%=camelEntityName %>);
+};
