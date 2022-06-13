@@ -128,8 +128,8 @@ module.exports = class extends Generator {
         message: 'Select which module this entity belongs to? ',
         choices: [
           {
-            name: 'components',
-            value: 'components',
+            name: 'modules',
+            value: 'modules',
           },
         ],
       },
@@ -507,9 +507,9 @@ module.exports = class extends Generator {
 
     const componentHook = '/* ====Chrispro lazy component Generator Hook: Dont Delete==== */';
 
-    const lazyComponent = `const ${this.capEntityName}List = React.lazy(() => import('./components/${this.snakeEntityName}'));\n`;
+    const lazyComponent = `const ${this.capEntityName}List = lazy(() => import('./modules/${this.snakeEntityName}'));\n`;
 
-    if (!file.includes(`<${this.capEntityName}List />`)) {
+    if (!file.includes(`${this.capEntityName}List`)) {
       const insertComponent = lazyComponent + componentHook;
       await this.fs.write(path, file.replace(componentHook, insertComponent));
     } else {
@@ -527,13 +527,14 @@ module.exports = class extends Generator {
     <Route
       path="/${this.snakeEntityName}"
       element={
-        <React.Suspense fallback={<NotFound/>}>
-          <${this.capEntityName}List />
-        </React.Suspense>
+        <PrivateRouteComponent
+              component={${this.capEntityName}List}
+              hasAnyAuthorities={[]}
+            />
       }
   />\n`;
 
-    if (!file.includes(`<${this.capEntityName}List />`)) {
+    if (!file.includes(`${this.capEntityName}List`)) {
       const insertRouter = route + routerHook;
       await this.fs.write(path, file.replace(routerHook, insertRouter));
     } else {

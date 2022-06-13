@@ -2,7 +2,6 @@ import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
-import { MultiSelect } from 'primereact/multiselect';
 import { classNames } from 'primereact/utils';
 import { Dialog } from 'primereact/dialog';
 import { Message } from 'primereact/message';
@@ -11,7 +10,6 @@ import { Message } from 'primereact/message';
   import { useFetch<%=r.rlCapPlural%> } from '../<%= r.rlSnake %>';
 <%_ }); _%>
 import { <%= capEntityName %>, useCreateOrUpdate<%= capEntityName %> } from '.';
-import { VALID_EMAIL_PATTERN } from '../../utils/utils';
 
 export const <%= capEntityName %>Update = ({ <%= camelEntityName %>, onClose, show }: any) => {
 

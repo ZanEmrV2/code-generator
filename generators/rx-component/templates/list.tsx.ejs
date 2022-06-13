@@ -5,7 +5,8 @@ import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Card } from 'primereact/card';
-import { TableAction } from '../shared/table-action';
+import { ErrorFetching, TableAction } from '../shared';
+import ErrorBoundary from '../../utils/error-boundary';
 import {
   <%= capEntityName %>,
   <%= capEntityName %>Update,
@@ -56,6 +57,7 @@ export default function <%= capEntityName %>List() {
   const {
     isLoading,
     isError,
+    error: errorFetching,
     refetch,
     data: <%=camelPluralEntityName%>,
   } = useFetch<%=capPluralEntityName%>({
@@ -185,10 +187,7 @@ export default function <%= capEntityName %>List() {
     <div className="flex flex-column gap-2">
       <Card style={{ width: '100%' }}>
         {isError ? (
-          <span>
-            Error loading Data please referesh{' '}
-            <Button onClick={() => refetch()} label="Reload"></Button>
-          </span>
+          <ErrorFetching error={errorFetching} refetch={refetch} />
         ) : (
           <DataTable
             header={header}
@@ -228,11 +227,13 @@ export default function <%= capEntityName %>List() {
           </DataTable>
         )}
         {showCreateOrUpdate && (
+          <ErrorBoundary>
           < <%= capEntityName %>Update
             show={showCreateOrUpdate}
             <%= camelEntityName %>={<%= camelEntityName %>}
             onClose={closeDialog}
           />
+          </ErrorBoundary>
         )}
       </Card>
       <Toast ref={toast} />
