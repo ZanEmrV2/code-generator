@@ -65,5 +65,5 @@ const create<%= capEntityName %> = (<%=camelEntityName %>: <%= capEntityName %>)
 
 const update<%= capEntityName %> = (<%=camelEntityName %>: <%= capEntityName %>): any => {
   return axios
-    .put(`${resourceUrl}/${<%=camelEntityName %>.id}`, <%=camelEntityName %>);
+    .patch(`${resourceUrl}/${<%=camelEntityName %>.id}`, <%=camelEntityName %>);
 };

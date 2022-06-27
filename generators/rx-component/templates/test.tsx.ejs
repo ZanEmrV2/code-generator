@@ -1,0 +1,100 @@
+import React from 'react';
+import { fireEvent, render, screen } from '@testing-library/react';
+import renderer from 'react-test-renderer';
+import <%= capEntityName %>List, { useCreateOrUpdate<%= capEntityName %>, useFetch<%=capPluralEntityName%> } from '..';
+
+<%_ relations.forEach(function(r){ _%>
+  <%_ if (r.rlSnake !=='parent') { _%> 
+  import { useFetch<%=r.rlCapPlural%> } from '../../<%= r.rlSnake %>';
+  <%_ } _%> 
+
+<%_ }); _%>
+
+const mockUseFetch<%=capPluralEntityName%> = useFetch<%=capPluralEntityName%> as jest.Mock<any>;
+const mockUseCreateOrUpdate<%= capEntityName %> = useCreateOrUpdate<%= capEntityName %> as jest.Mock<any>;
+<%_ relations.forEach(function(r){ _%>
+  <%_ if (r.rlSnake !=='parent') { _%> 
+const mockUseFetch<%=r.rlCapPlural%> = useFetch<%=r.rlCapPlural%> as jest.Mock<any>;
+  <%_ } _%> 
+
+<%_ }); _%>
+
+jest.mock('../<%=snakeEntityName%>-api');
+<%_ relations.forEach(function(r){ _%>
+  <%_ if (r.rlSnake !== 'parent') { _%> 
+jest.mock('../../<%= r.rlSnake %>/<%= r.rlSnake %>-api');
+<%_ } _%> 
+
+<%_ }); _%>
+
+describe('<%= capEntityName %>Component', () => {
+  beforeEach(() => {
+    mockUseFetch<%=capPluralEntityName%>.mockImplementation(() => ({
+      isLoading: true,
+      data: {
+        data: [
+        {
+        <%_ fields.forEach(function(f){ _%>
+          <%_ if (f.name != 'id' && f.relation === undefined &&  !f.dbType.includes('json')) { _%> 
+            <%=f.camelName %>: 'Test<%=f.camelName %>',
+          <%_ } _%>
+       <%_ }); _%>
+      }
+        ],
+      },
+      isError: false,
+    }));
+
+    <%_ relations.forEach(function(r){ _%>
+      <%_ if (r.rlSnake !== 'parent') { _%> 
+      mockUseFetch<%=r.rlCapPlural%>.mockImplementation(() => ({
+        isLoading: true,
+        data: {
+          data: [
+            {
+              id: 1,
+              name: 'Test<%=r.rlCapPlural%>',
+            },
+          ],
+        },
+        isError: false,
+      }));
+      <%_ } _%> 
+    <%_ }); _%>
+
+    mockUseCreateOrUpdate<%= capEntityName %>.mockImplementation(() => ({
+      mutate: jest.fn(() => {}),
+      isError: false,
+    }));
+
+  });
+
+  test('Should Render List', () => {
+    render(<<%= capEntityName %>List />);
+    <%_ fields.forEach(function(f){ _%>
+      <%_ if (f.name != 'id' && f.relation === undefined &&  !f.dbType.includes('json')) { _%> 
+      const <%=f.camelName %>Element = screen.getByText(/Test<%=f.camelName %>/i);
+      expect(<%=f.camelName %>Element).toBeInTheDocument();
+      <%_ } _%>
+   <%_ }); _%>
+   
+  });
+
+  test('Should Open Create/Update Popup', () => {
+    render(<<%= capEntityName %>List />);
+    fireEvent.click(screen.getByTestId('btn-create'));
+    expect(screen.getByTestId(/create-update-dialog/i)).toBeInTheDocument();
+    <%_ relations.forEach(function(r){ _%>
+      expect(screen.getByTestId(/<%=r.rlCamelPlural%>/i)).toBeInTheDocument();
+      <%_ }); _%>
+  });
+
+  test('Should Not Be Modified', () => {
+    const tree = renderer.create(<<%= capEntityName %>List />).toJSON();
+    expect(tree).toMatchSnapshot();
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+});

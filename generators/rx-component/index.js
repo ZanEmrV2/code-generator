@@ -217,6 +217,7 @@ module.exports = class extends Generator {
     this._generateApi();
     this._generateListComponent();
     this._generateUpdateComponent();
+    this._generateTestComponent();
     this._insertLazyComponent();
     this._updateRoute();
     // this._updateMenu();
@@ -228,7 +229,7 @@ module.exports = class extends Generator {
     this.parentFolder = this.parentFolderInput.name.toLowerCase();
 
     //
-    const fieldName = this.entityNameInput.name.replace('.json', '');
+    const fieldName = pluralize.singular(this.entityNameInput.name.replace('.json', ''));
 
     //Split entity name words separated by underscorre
     const words = fieldName.split('_');
@@ -239,6 +240,7 @@ module.exports = class extends Generator {
     //For each word of the entity change to capitalized and join to entity name
     //ie. create capitlaized name of the entity
     words.forEach(w => {
+      // ws = pluralize.singular(w).toLowerCase();
       this.capEntityName = this.capEntityName + w.charAt(0).toUpperCase() + w.slice(1);
     });
 
@@ -501,6 +503,29 @@ module.exports = class extends Generator {
     );
   }
 
+  _generateTestComponent() {
+    this.fs.copyTpl(
+      this.templatePath('test.tsx.ejs'),
+      this.destinationPath(`src/${this.parentFolder}/${this.snakeEntityName}/__tests__/${this.snakeEntityName}.test.tsx`),
+      {
+        capEntityName: this.capEntityName,
+        capPluralEntityName: this.capPluralEntityName,
+        snakeEntityName: this.snakeEntityName,
+        fields: this.fields,
+        relations: this.relations,
+        camelEntityName: this.camelEntityName,
+        camelPluralEntityName: this.camelPluralEntityName,
+        entityName: this.entityName,
+        mandatory: this.mandatory,
+        allMandatory: this.allMandatory,
+        enums: this.enums,
+        mandatoryEnums: this.mandatoryEnums,
+        entityNamePlural: this.entityNamePlural,
+        jsons: this.jsons,
+      }
+    );
+  }
+
   async _insertLazyComponent() {
     const path = this.destinationPath('src/app.tsx');
     let file = this.fs.read(path);
@@ -534,7 +559,7 @@ module.exports = class extends Generator {
       }
   />\n`;
 
-    if (!file.includes(`${this.capEntityName}List`)) {
+    if (!file.includes(`path="/${this.snakeEntityName}"`)) {
       const insertRouter = route + routerHook;
       await this.fs.write(path, file.replace(routerHook, insertRouter));
     } else {

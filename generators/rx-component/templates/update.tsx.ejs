@@ -1,26 +1,22 @@
 import React from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { Button } from 'primereact/button';
-import { InputText } from 'primereact/inputtext';
-import { classNames } from 'primereact/utils';
-import { Dialog } from 'primereact/dialog';
-import { Message } from 'primereact/message';
+import { useForm } from 'react-hook-form';
+import { AppDialog } from '../shared/app-dialog';
+import {
+  AppInputSwitch,
+  AppInputText,
+  AppMultSelect,
+  AppSelect,
+  AppSubmitBtn,
+} from '../shared/app-form-controls';
 
 <%_ relations.forEach(function(r){ _%>
+  <%_ if (r.rlSnake !== 'parent') { _%> 
   import { useFetch<%=r.rlCapPlural%> } from '../<%= r.rlSnake %>';
+  <%_ } _%> 
 <%_ }); _%>
 import { <%= capEntityName %>, useCreateOrUpdate<%= capEntityName %> } from '.';
 
 export const <%= capEntityName %>Update = ({ <%= camelEntityName %>, onClose, show }: any) => {
-
-  <%_ relations.forEach(function(r){ _%>
-    <%= r.rlCamelPlural %>?: <%= r.rlCap %>[] = [];  
-    const { data: <%= r.rlCamelPlural %> } = useFetch<%= r.rlCapPlural %>({
-      queryParams: { columns: 'id,name' },
-    });
-  <%_ }); _%>
-
-  
   const {
     control,
     formState: { errors },
@@ -29,154 +25,90 @@ export const <%= capEntityName %>Update = ({ <%= camelEntityName %>, onClose, sh
     defaultValues: <%= camelEntityName %>,
   });
 
-  const {
-    mutate: createOrUpdate,
-    isError,
-    error,
-  } = useCreateOrUpdate<%= capEntityName %>({
-    onSuccess: () => {
-      onClose(true);
-    },
+  <%_ relations.forEach(function(r){ _%>
+    const <%= r.rlCamelPlural %>Query = useFetch<%= (r.rlSnake === 'parent') ? capPluralEntityName : r.rlCapPlural   %>({
+      queryParams: { columns: 'id,name' },
+    });
+  <%_ }); _%>
+
+  const saveMutation = useCreateOrUpdate<%= capEntityName %>({
+    onSuccess: () => onClose(true),
   });
 
-  const onSubmit = async (data: <%= capEntityName %>) => {
-    createOrUpdate(data);
-  };
-
-  const getFormErrorMessage = (name: string) => {
-    return (
-      errors[name] && <small className="p-error">{errors[name].message}</small>
-    );
-  };
+  const onSubmit = async (data: <%= capEntityName %>) => saveMutation.mutate(data);
 
   return (
-    <Dialog
-      onHide={() => onClose(false)}
-      visible={show}
-      style={{ width: '450px' }}
-      header="Create or Update <%= entityName %>"
-      modal>
-      <div>
-        <form onSubmit={handleSubmit(onSubmit)} className="p-fluid">
-          <div className="flex flex-column gap-2 mt-2">
-            {isError && (
-              <Message
-                severity="error"
-                content={
-                  typeof error.message === 'object'
-                    ? error.message?.map((e: string) => <li key={e}>{e}</li>)
-                    : error.message
-                }></Message>
-            )}
-
+    <AppDialog
+      show={show}
+      onClose={onClose}
+      header="Create or Update User"
+      isError={saveMutation.isError}
+      isSubmiting={saveMutation.isLoading}
+      error={saveMutation.error}>
+      <form onSubmit={handleSubmit(onSubmit)} className="p-fluid">
+       <div className="flex flex-column gap-3 mt-4">
             <%_ fields.forEach(function(f){ _%>
               <%_ if (f.name != 'id' && f.relation === undefined && f.dbType !== 'enum' && !f.dbType.includes('boolean') && !f.dbType.includes('json')) { _%> 
-                <div className="field">
-                  <span className="p-float-label">
-                    <Controller
-                      name="<%=f.camelName %>"
+                <%_ if (f.dbType.includes('string')) { _%> 
+                    <AppInputText
                       control={control}
+                      name="<%=f.camelName %>"
+                      label="<%= f.header %>"
+                      errors={errors}
                       <%_ if (f.validations !== undefined) { _%>
                         rules={{
                           <%_  if(f.validations.includes('required')){_%>
-                             required: '<%= f.header %> is required',
-                           <%_ } _%>
-                      }}
-                      <%_ } _%>
-                      render={({ field, fieldState }) => (
-                        <%_ if (f.dbType.includes('string')) { _%> 
-                        <InputText id={field.name} {...field} />
-                        <%_ } _%>
-                        <%_ if (f.dbType.includes('text')) { _%> 
-                          <InputTextarea rows={5} id={field.name} {...field} />
-                        <%_ } _%>
-                        <%_ if (f.dbType.includes('integer')) { _%> 
-                          <InputNumber id={field.name} {...field} onChange={(e) => field.onChange(e.value)} value={field.value} />
-                        <%_ } _%>
-                        <%_ if (f.dbType.includes('decimal') || f.dbType.includes('double') || f.dbType.includes('float')) { _%> 
-                          <InputNumber id={field.name} {...field} mode='decimal' onChange={(e) => field.onChange(e.value)} value={field.value} />
-                        <%_ } _%>
-                        <%_ if (f.dbType.includes('date')) { _%> 
-                          <Calendar id={field.name} {...field} />
+                            required: '<%= f.header %> is required',
                           <%_ } _%>
-                      )}
+                        }}
+                      <%_ } _%>
                     />
-                    <label
-                      htmlFor="<%=f.camelName %>"
-                      className={classNames({ 'p-error': errors.<%=f.camelName %> })}>
-                      <%= f.header %>
-                    </label>
-                  </span>
-                  <%_ if (f.validations !== undefined) { _%>
-                  {getFormErrorMessage('<%=f.camelName %>')}
                   <%_ } _%>
-                </div>
+                  <%_ if (f.dbType.includes('text')) { _%> 
+                    <AppTextarea rows={5} id={field.name} {...field} />
+                  <%_ } _%>
+                  <%_ if (f.dbType.includes('integer')) { _%> 
+                    /**{ not implemented}*/
+                  <%_ } _%>
+                  <%_ if (f.dbType.includes('decimal') || f.dbType.includes('double') || f.dbType.includes('float')) { _%> 
+                    /**{ not implemented}*/
+                  <%_ } _%>
+                  <%_ if (f.dbType.includes('date')) { _%> 
+                    /**{ not implemented}*/
+                  <%_ } _%>
               <%_ } _%>
               
               <%_ if (f.name != 'id' && f.relation === undefined && f.dbType !== 'enum' && f.dbType.includes('boolean')) { _%> 
-                <div className='flex flex-column gap-1'>
-                  <Controller
-                  name="<%=f.camelName %>"
-                  control={control}
-                  render={({ field }) => <InputSwitch id={field.name} {...field}  onChange={(e) => field.onChange(e.value)} checked={field.value} />}
-                />
-                <label for="<%= f.camelName %>"><%= f.header %> </label>
-              </div>
+                <AppInputSwitch  name="<%=f.camelName %>" control={control} label="<%= f.header %>" />
             <%_ } _%>
             <%_ }); _%>
 
             <%_ relations.forEach(function(r){ _%>
-              <div className="field">
-                  <span className="p-float-label">
                     <%_ if (r.type === 'mt1') { _%> 
-                      <Controller
-                        name="<%=r.rlCamel %>"
+                      <AppSelect
                         control={control}
-                        render={({ field }) => (
-                          <Dropdown id={field.name} 
-                                    dataKey="id"
-                                    value={field.value} 
-                                    onChange={(e) => field.onChange(e.value)} 
-                                    options={<%=r.rlCamelPlural%>?.data || []} 
-                                    optionLabel="name" />
-                        )}
+                        name="<%= r.rlCamelPlural %>"
+                        label="<%= r.header %>"
+                        optionLabel="name"
+                        options={<%= r.rlCamelPlural %>Query.data?.data}
+                        refetch={<%= r.rlCamelPlural %>Query.refetch}
+                        isLoading={<%= r.rlCamelPlural %>Query.isLoading}
                       />
-                      <label
-                        htmlFor="<%=r.rlCamel %>"
-                        className={classNames({ 'p-error': errors.<%=r.rlCamel %> })}>
-                        <%=r.header %>
-                      </label>
                     <% } else { %>
-                    <Controller
-                      name="<%=r.rlCamelPlural %>"
-                      control={control}
-                      render={({ field }) => (
-                        <MultiSelect
-                          dataKey="id"
-                          id={field.name}
-                          {...field}
-                          options={<%=r.rlCamelPlural%>?.data || []}
-                          optionLabel="name"
-                        />
-                      )}
-                    />
-                    <label
-                      htmlFor="<%=r.rlCamelPlural%>"
-                      className={classNames({ 'p-error': errors.<%=r.rlCamelPlural%> })}>
-                      <%=r.header %>
-                    </label>
+                      <AppMultSelect
+                        control={control}
+                        name="<%= r.rlCamel %>"
+                        label="<%= r.header %>"
+                        optionLabel="name"
+                        options={<%= r.rlCamelPlural %>Query.data?.data}
+                        refetch={<%= r.rlCamelPlural %>Query.refetch}
+                        isLoading={<%= r.rlCamelPlural %>Query.isLoading}
+                      />
                     <% }  %>
-                 </span>
-                 <%_ if (r.validations !== undefined) { _%>
-                  {getFormErrorMessage('<%= r.type === 'mt1' ? r.rlCamel : r.rlCamelPlural %>')}
-                 <% }  %>
-              </div>
-           <%_ }); _%>
-            
-          </div>
-          <Button type="submit" label="Submit" className="mt-2" />
-        </form>
-      </div>
-    </Dialog>
+             <%_ }); _%>
+           <AppSubmitBtn />
+        </div>
+      </form>
+    </AppDialog>
   );
 };

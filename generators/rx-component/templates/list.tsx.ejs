@@ -1,11 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
-import { Button } from 'primereact/button';
-import { Column } from 'primereact/column';
-import { Toast } from 'primereact/toast';
-import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
-import { Card } from 'primereact/card';
-import { ErrorFetching, TableAction } from '../shared';
+import React, { useState } from 'react';
+import { DataTableFilterMeta } from 'primereact/datatable';
 import ErrorBoundary from '../../utils/error-boundary';
 import {
   <%= capEntityName %>,
@@ -15,13 +9,14 @@ import {
   <%=camelEntityName%>DefaultValue,
 } from '.';
 import {
+  DEFAULT_QUERY_PARAMS,
   IQueryParams,
-  ITEMS_PER_PAGE_OPTIONS,
   stringDefaultFilter,
 } from '../../utils/utils';
+import { useAppToast } from '../shared/toast-provider';
+import { AppTable } from '../shared/app-table';
 
 export default function <%= capEntityName %>List() {
-  //Config column filters
   const initialOptionFilters: DataTableFilterMeta = {
     <%_ fields.forEach(function(f){ _%>
        <%_ if(f.searchable){ _%>
@@ -30,72 +25,40 @@ export default function <%= capEntityName %>List() {
     <%_ }); _%>
   };
 
-  const perPageOptions = ITEMS_PER_PAGE_OPTIONS;
+  const columns = [
+    <%_ fields.forEach(function(f){ _%>
+      <%_ if (f.name != 'id' && f.relation === undefined &&  !f.dbType.includes('json')) { _%> 
+      { field: '<%=f.camelName%>', header: '<%=f.header%>', <%_ if(f.searchable){ searchable: true } %>},
+      <%_ } _%>
+
+    <%_ }); _%>
+  ];
 
   const [showCreateOrUpdate, setShowCreateOrUpdate] = useState(false);
 
-  //Selected <%= capEntityName %> to be updated or new <%= capEntityName %>
   const [<%= camelEntityName %>, set<%= capEntityName %>] = useState<<%= capEntityName %>>();
 
-  /** a separeate filter state to avoid data loading on initilization, table columns that can be filtered and they options (i.e not necessary to fetch data)*/
-  const [optionalFilters, setOptionalFilters] = useState<DataTableFilterMeta>();
+  const { showSuccess, showError, confirm } = useAppToast();
 
-  const toast = useRef<Toast>(null);
+  const [queryParams, setQueryParams] =
+    useState<IQueryParams>(DEFAULT_QUERY_PARAMS);
 
-  /** pagination option, optional filters ,
-   *  useFetch<%=capPluralEntityName%> function observe this state and reload data when any property value is changed
-   */
-  const [queryParams, setQueryParams] = useState<IQueryParams>({
-    first: 0,
-    rows: 10,
-    page: 0,
-    optionalFilters: undefined,
-    sortField: undefined,
-    sortOrder: undefined,
-  });
-
-  const {
-    isLoading,
-    isError,
-    error: errorFetching,
-    refetch,
-    data: <%=camelPluralEntityName%>,
-  } = useFetch<%=capPluralEntityName%>({
+  const <%=camelPluralEntityName%>Query = useFetch<%=capPluralEntityName%>({
     queryParams,
   });
 
-  const initFilters = () => {
-    setOptionalFilters(initialOptionFilters);
-  };
-
-  // When filter cleared init filter state and update queryParam filter property
-  const clearFilters = () => {
-    initFilters();
-    setQueryParams({
-      ...queryParams,
-      optionalFilters,
-    });
-  };
-
-  useEffect(() => {
-    initFilters();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const deteleMutation = useDelete<%= capEntityName %>({
     onSuccess: () => {
-      refetch();
-      toast.current?.show({
-        severity: 'success',
-        summary: 'Deleted successfully',
-        detail: '<%= capEntityName %> deleted',
-        life: 3000,
-      });
+      <%=camelPluralEntityName%>Query.refetch();
+      showSuccess('<%= capEntityName %> deleted successfully');
+    },
+    onError: () => {
+      showError('Something went wrong', 'Cannot delete <%= capEntityName %>');
     },
   });
 
   const createOrEdit = (<%=camelEntityName%>Data?: <%= capEntityName %>) => {
-    const data = <%=camelEntityName%>Data || <%=camelEntityName%>DefaultValue;
+    const data = <%=camelEntityName%>Data || {...<%=camelEntityName%>DefaultValue};
     set<%= capEntityName %>(data);
     setShowCreateOrUpdate(true);
   };
@@ -104,140 +67,47 @@ export default function <%= capEntityName %>List() {
     setShowCreateOrUpdate(false);
     set<%= capEntityName %>(undefined);
     if (result) {
-      refetch();
-      toast.current?.show({
-        severity: 'success',
-        summary: 'Success Message',
-        detail: '<%= capEntityName %> created successfully',
-        life: 3000,
-      });
+      <%=camelPluralEntityName%>Query.refetch();
+      showSuccess('<%= capEntityName %> created successfully');
     }
   };
 
-  const pageChanges = (event: any) => {
+  const onParamChange = (changes: any) => {
     setQueryParams({
       ...queryParams,
-      page: event.page,
-      first: event.first,
-      rows: event.rows,
+      ...changes,
     });
   };
-
-  const onSort = (event) => {
-    setQueryParams({
-      ...queryParams,
-      sortField: event.sortField,
-      sortOrder: event.sortOrder,
-    });
-  };
-
-  /**When filter change update queryParam filter property */
-  const onFilter = (event: any) => {
-    if (Object.keys(event.filters).length) {
-      event['first'] = 0;
-      setQueryParams({
-        ...queryParams,
-        optionalFilters: { ...event.filters },
-      });
-    }
-  };
-
+ 
   const confirmDelete = (<%= camelEntityName %>: <%= capEntityName %>) => {
-    confirmDialog({
-      header: 'Confirm Detele <%= capEntityName %>',
-      message: 'Are you sure you want to delete this <%= capEntityName %>',
-      accept: () => deteleMutation.mutate(<%= camelEntityName %>.id!),
-    });
-  };
-
-  const header = () => {
-    return (
-      <div className="flex flex-row justify-content-between align-items-center">
-        <span className="text-lg"><%= entityName %></span>
-
-        <div className="flex flex-row justify-content-start align-items-center gap-1">
-          <Button
-            type="button"
-            icon="pi pi-filter-slash"
-            label="Clear filter"
-            className="p-button-text p-button-plain"
-            onClick={clearFilters}
-          />
-          <Button
-            icon="pi pi-plus"
-            className="p-button-raised"
-            onClick={() => createOrEdit()}
-            label="Create <%= capEntityName %>"></Button>
-        </div>
-      </div>
-    );
-  };
-
-  const actions = (rowData: <%= capEntityName %>) => {
-    return (
-      <TableAction
-        rowData={rowData}
-        edit={createOrEdit}
-        confirmDelete={confirmDelete}
-      />
+    confirm(`Are you sure you want to delete this <%= capEntityName %>`, 'Confirm Delete', () =>
+      deteleMutation.mutate(<%= camelEntityName %>.id!),
     );
   };
 
   return (
-    <div className="flex flex-column gap-2">
-      <Card style={{ width: '100%' }}>
-        {isError ? (
-          <ErrorFetching error={errorFetching} refetch={refetch} />
-        ) : (
-          <DataTable
-            header={header}
-            showGridlines
-            size="small"
-            lazy
-            paginator
-            first={queryParams.first}
-            rows={queryParams.rows}
-            totalRecords={<%= camelPluralEntityName %>?.total}
-            onPage={pageChanges}
-            filters={optionalFilters}
-            rowsPerPageOptions={perPageOptions}
-            filterDisplay="menu"
-            dataKey="id"
-            onFilter={onFilter}
-            value={<%= camelPluralEntityName %>?.data}
-            loading={isLoading}
-            onSort={onSort}
-            sortField={queryParams.sortField}
-            sortOrder={queryParams.sortOrder}
-            style={{ width: '100%' }}>
-            <%_ fields.forEach(function(f){ _%>
-              <%_ if (f.name != 'id' && allMandatory.indexOf(f.name) === -1) { _%> 
-                <Column
-                <%_ if(f.searchable){ _%>
-                  filter
-                  sortable
-                  filterPlaceholder="Search by <%= f.header %>"
-                  <%_ } _%>
-                  field="<%=f.camelName %>"
-                  header="<%= f.header %>"
-                />
-              <%_ } _%>
-            <%_ }); _%>
-            <Column className="actions" body={actions} />
-          </DataTable>
-        )}
-        {showCreateOrUpdate && (
-          <ErrorBoundary>
-          < <%= capEntityName %>Update
+
+    <div className="flex flex-column gap-3">
+      <AppTable
+        columns={columns}
+        query={<%= camelPluralEntityName %>Query}
+        title="<%=capPluralEntityName%>"
+        queryParams={queryParams}
+        initialOptionFilters={initialOptionFilters}
+        mutation={deteleMutation}
+        createOrEdit={createOrEdit}
+        confirmDelete={confirmDelete}
+        onParamChange={onParamChange}
+      />
+      {showCreateOrUpdate && (
+        <ErrorBoundary>
+          <<%= capEntityName %>Update
             show={showCreateOrUpdate}
             <%= camelEntityName %>={<%= camelEntityName %>}
             onClose={closeDialog}
           />
-          </ErrorBoundary>
-        )}
-      </Card>
-      <Toast ref={toast} />
-      <ConfirmDialog />
+        </ErrorBoundary>
+      )}
     </div>
   );
 }
