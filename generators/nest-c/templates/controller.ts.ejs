@@ -1,0 +1,11 @@
+import { Controller } from '@nestjs/common';
+import { <%= capEntityName %>Service } from './user.service';
+import { BaseController } from '../base/base.controller';
+import { <%= capEntityName %> } from './user.entity';
+
+@Controller('api/users')
+export class <%= capEntityName %>Controller extends BaseController<User> {
+  constructor(private readonly <%= camelEntityName %>Service: <%= capEntityName %>Service) {
+    super(<%= camelEntityName %>Service);
+  }
+}

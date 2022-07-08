@@ -1,0 +1,26 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { <%= capEntityName %> } from './<%= snakeEntityName %>.entity';
+import { <%= capEntityName %>Service } from './<%= snakeEntityName %>.service';
+
+describe('<%= capEntityName %>Service', () => {
+  let service: <%= capEntityName %>Service;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+      <%= capEntityName %>Service,
+        {
+          provide: getRepositoryToken(<%= capEntityName %>),
+          useValue: {},
+        },
+      ],
+    }).compile();
+
+    service = module.get<<%= capEntityName %>Service>(<%= capEntityName %>Service);
+  });
+
+  it('should be defined', () => {
+    return expect(service).toBeDefined();
+  });
+});

@@ -1,0 +1,28 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { <%= capEntityName %>Controller } from './<%= snakeEntityName %>.controller';
+import { <%= capEntityName %> } from './<%= snakeEntityName %>.entity';
+import { <%= capEntityName %>Service } from './<%= snakeEntityName %>.service';
+
+describe('<%= capEntityName %>Controller', () => {
+  let controller: <%= capEntityName %>Controller;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [<%= capEntityName %>Controller],
+      providers: [
+      <%= capEntityName %>Service,
+        {
+          provide: getRepositoryToken(User),
+          useValue: {},
+        },
+      ],
+    }).compile();
+
+    controller = module.get<<%= capEntityName %>Controller>(<%= capEntityName %>Controller);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+});

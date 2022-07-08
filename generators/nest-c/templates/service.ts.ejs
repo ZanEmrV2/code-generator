@@ -1,0 +1,36 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { <%= capEntityName %> } from './<%= snakeEntityName %>.entity';
+import { BaseCrudService } from '../base/base-crud.service';
+
+@Injectable()
+export class <%= capEntityName %>Service extends BaseCrudService<<%= capEntityName %>> {
+  alias = '<%= camelPluralEntityName %>';
+  constructor(
+    @InjectRepository(<%= capEntityName %>)
+    private repository: Repository<<%= capEntityName %>>,
+  ) {
+    super(repository);
+  }
+
+  /**
+   * Override create method to add default password to new <%= capEntityName %>
+   */
+  async create(create<%= capEntityName %>Dto: <%= capEntityName %>) {
+    const data = {
+      ...new <%= capEntityName %>(),
+      ...create<%= capEntityName %>Dto,
+    };
+    const result = await this.repository.save(data);
+    return result;
+  }
+
+  getEagerRelation(): string[] {
+    return [];
+  }
+
+  getEagerSelect(): string[] {
+    return [];
+  }
+}
