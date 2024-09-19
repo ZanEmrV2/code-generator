@@ -1,4 +1,4 @@
-package <%=package%>.<%=snakeEntityName%>;
+package <%=package%>.<%= parentFolder %>.<%=snakeEntityName%>;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import <%=package%>.core.BaseModel;
 <%_ relations.forEach(function(r){ _%>
-import <%=package%>.<%= r.rlSnake%>.<%=r.rlCap %>;
+import <%=package%>.<%=parentFolder%>.<%= r.rlSnake%>.<%=r.rlCap %>;
 <%_ }); _%>
 
 @Getter

@@ -50,6 +50,7 @@ At: ${fileContent}`;
 
 module.exports = class extends Generator {
   entityNameInput;
+  parentFolderInput;
   fields = [];
   package = '';
   relations = [];
@@ -71,6 +72,7 @@ module.exports = class extends Generator {
   entityNamePlural;
   resourcePath;
   destination;
+  parentFolder;
 
   constructor(args, opts) {
     super(args, opts);
@@ -79,7 +81,7 @@ module.exports = class extends Generator {
 
   async prompting() {
     await this._getEntityName();
-    // await this._getParentFolderName();
+     await this._getParentFolderName();
     await this._getFields();
     if (this.rawRelations.length) {
       await this._getMandator();
@@ -116,6 +118,29 @@ module.exports = class extends Generator {
       await this._getEntityName();
     }
   }
+
+  async _getParentFolderName() {
+    this.parentFolderInput = await this.prompt([
+      {
+        type: 'list',
+        name: 'name',
+        message: 'Select which module this entity belongs to? ',
+        choices: [
+          {
+            name: 'modules',
+            value: 'modules',
+          },
+        ],
+      },
+    ]);
+    if (this.parentFolderInput.name === undefined) {
+      this.log('invalid PARENT folder name');
+      await this._getParentFolderName();
+    } else if (this.parentFolderInput.name.includes(' ')) {
+      await this._getParentFolderName();
+    }
+  }
+
 
   /**
    * Reading fields from entities file
@@ -205,7 +230,7 @@ module.exports = class extends Generator {
 
   _init() {
     //component parent folder directory
-    // this.parentFolder = this.parentFolderInput.name.toLowerCase();
+     this.parentFolder = this.parentFolderInput.name.toLowerCase();
 
     //
     const fieldName = pluralize.singular(this.entityNameInput.name.replace('.json', ''));
@@ -398,7 +423,7 @@ module.exports = class extends Generator {
 
     //
     this.allMandatory = this.mandatory.concat(this.mandatoryEnums);
-    this.destination = `src/main/java/${this.package.split('.').join('/')}/${this.snakeEntityName}`;
+    this.destination = `src/main/java/${this.package.split('.').join('/')}/${this.parentFolder}/${this.snakeEntityName}`;
   }
 
   /**
@@ -413,6 +438,7 @@ module.exports = class extends Generator {
       fields: this.fields,
       package: this.package,
       relations: this.relations,
+      parentFolder: this.parentFolder,
       tableName: this.tableName,
     });
   }
@@ -423,6 +449,7 @@ module.exports = class extends Generator {
       capEntityName: this.capEntityName,
       snakeEntityName: this.snakeEntityName,
       fields: this.fields,
+      parentFolder: this.parentFolder,
       relations: this.relations,
       package: this.package,
     });
@@ -437,6 +464,7 @@ module.exports = class extends Generator {
         capEntityName: this.capEntityName,
         snakeEntityName: this.snakeEntityName,
         fields: this.fields,
+        parentFolder: this.parentFolder,
         package: this.package,
       }
     );
@@ -448,6 +476,7 @@ module.exports = class extends Generator {
       capEntityName: this.capEntityName,
       snakeEntityName: this.snakeEntityName,
       fields: this.fields,
+      parentFolder: this.parentFolder,
       package: this.package,
     });
   }
@@ -461,6 +490,7 @@ module.exports = class extends Generator {
         capEntityName: this.capEntityName,
         snakeEntityName: this.snakeEntityName,
         fields: this.fields,
+        parentFolder: this.parentFolder,
         package: this.package,
       }
     );
@@ -472,6 +502,7 @@ module.exports = class extends Generator {
       capEntityName: this.capEntityName,
       snakeEntityName: this.snakeEntityName,
       fields: this.fields,
+      parentFolder: this.parentFolder,
       package: this.package,
     });
   }
@@ -487,7 +518,10 @@ module.exports = class extends Generator {
         snakeEntityName: this.snakeEntityName,
         fields: this.fields,
         package: this.package,
+        parentFolder: this.parentFolder,
         resourcePath: this.resourcePath,
+        relations: this.relations,
+        allMandatory: this.allMandatory,
       }
     );
   }

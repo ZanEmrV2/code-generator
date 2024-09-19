@@ -1,4 +1,4 @@
-package <%= package %>.<%= snakeEntityName %>;
+package <%= package %>.<%= parentFolder %>.<%= snakeEntityName %>;
 
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
@@ -20,8 +20,11 @@ public class <%= capEntityName %>Resource {
     private final <%= capEntityName %>Service <%= camelEntityName %>Service;
 
     @GetMapping
-    public CustomApiResponse get(Pageable pageable,
-                                 @RequestParam Map<String, Object> searchParams) {
+    public CustomApiResponse get(Pageable pageable
+       <%_ relations.forEach(function(r) { _%> <%_ if(allMandatory.indexOf(r.name) !== -1) { _%>
+         ,@RequestParam Long <%=r.rlCamel%>Id
+       <%_ }}) _%>
+        ,@RequestParam Map<String, Object> searchParams) {
         return CustomApiResponse.ok(<%= camelEntityName %>Service.findAll(pageable, searchParams));
     }
 
