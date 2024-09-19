@@ -51,7 +51,7 @@ At: ${fileContent}`;
 module.exports = class extends Generator {
   entityNameInput;
   fields = [];
-  package = ''
+  package = '';
   relations = [];
   enums = [];
   rawRelations = [];
@@ -126,15 +126,14 @@ module.exports = class extends Generator {
       this.log('invalid path ');
       return;
     }
-    if(data.fields ===undefined) {
+    if (data.fields === undefined) {
       this.log('json file mut has fields array prop');
       return;
-    }
-    else {
-      this.package = data.package
+    } else {
+      this.package = data.package;
       //remove created, updated fields and timestamp fields
       this.fields = data.fields.filter(f => {
-        return !f.name.includes('created') && !f.name.includes('updated') && f.dbType !== 'timestamp';
+        return !f.name.includes('created') && !f.name.includes('updated');
       });
     }
     //Read foreign or manay to many relationship fields
@@ -195,17 +194,18 @@ module.exports = class extends Generator {
   writing() {
     this._init();
     this._generateEntity();
-    this._generateDto()
+    this._generateDto();
     this._generateRepo();
     this._generateMapper();
     this._generateService();
     this._generateServiceImpl();
     this._generateController();
+    this._generateMigration();
   }
 
   _init() {
     //component parent folder directory
-   // this.parentFolder = this.parentFolderInput.name.toLowerCase();
+    // this.parentFolder = this.parentFolderInput.name.toLowerCase();
 
     //
     const fieldName = pluralize.singular(this.entityNameInput.name.replace('.json', ''));
@@ -287,10 +287,12 @@ module.exports = class extends Generator {
         return index == 0 ? letter.toLowerCase() : '_' + letter.toLowerCase();
       });
 
-      //Realtion camel case plural used for relation collection variable name
+      //Relation camel case plural used for relation collection variable name
       const rlCamelPlural = pluralize(rlCamel);
 
       const rlCapPlural = pluralize(rlCap);
+
+      const rlTableName = pluralize(rlSnake);
 
       //If this relation is mandatory filter
       const mandatory = this.mandatory.indexOf(r.name) !== 1;
@@ -305,6 +307,7 @@ module.exports = class extends Generator {
         rlSnake,
         rlCamelPlural,
         mandatory,
+        rlTableName,
         header: _.startCase(r.name).replace('Id', ''),
       };
     });
@@ -395,42 +398,34 @@ module.exports = class extends Generator {
 
     //
     this.allMandatory = this.mandatory.concat(this.mandatoryEnums);
-    this.destination = `src/main/java/${this.package.split('.').join('/')}/${this.snakeEntityName}`
+    this.destination = `src/main/java/${this.package.split('.').join('/')}/${this.snakeEntityName}`;
   }
-
 
   /**
    * Generate entity file
    */
   _generateEntity() {
-    this.fs.copyTpl(
-      this.templatePath('entity.java.ejs'),
-      this.destinationPath(`${this.destination}/${this.capEntityName}.java`),
-      {
-        camelEntityName: this.camelEntityName,
-        camelPluralEntityName: this.camelPluralEntityName,
-        capEntityName: this.capEntityName,
-        snakeEntityName: this.snakeEntityName,
-        fields: this.fields,
-        package: this.package,
-        relations: this.relations,
-        tableName: this.tableName
-      }
-    );
+    this.fs.copyTpl(this.templatePath('entity.java.ejs'), this.destinationPath(`${this.destination}/${this.capEntityName}.java`), {
+      camelEntityName: this.camelEntityName,
+      camelPluralEntityName: this.camelPluralEntityName,
+      capEntityName: this.capEntityName,
+      snakeEntityName: this.snakeEntityName,
+      fields: this.fields,
+      package: this.package,
+      relations: this.relations,
+      tableName: this.tableName,
+    });
   }
+
   _generateDto() {
-    this.fs.copyTpl(
-      this.templatePath('dto.java.ejs'),
-      this.destinationPath(`${this.destination}/${this.capEntityName}Dto.java`),
-      {
-        camelEntityName: this.camelEntityName,
-        capEntityName: this.capEntityName,
-        snakeEntityName: this.snakeEntityName,
-        fields: this.fields,
-        relations: this.relations,
-        package: this.package,
-      }
-    );
+    this.fs.copyTpl(this.templatePath('dto.java.ejs'), this.destinationPath(`${this.destination}/${this.capEntityName}Dto.java`), {
+      camelEntityName: this.camelEntityName,
+      capEntityName: this.capEntityName,
+      snakeEntityName: this.snakeEntityName,
+      fields: this.fields,
+      relations: this.relations,
+      package: this.package,
+    });
   }
 
   _generateRepo() {
@@ -448,17 +443,13 @@ module.exports = class extends Generator {
   }
 
   _generateService() {
-    this.fs.copyTpl(
-      this.templatePath('service.java.ejs'),
-      this.destinationPath(`${this.destination}/${this.capEntityName}Service.java`),
-      {
-        camelEntityName: this.camelEntityName,
-        capEntityName: this.capEntityName,
-        snakeEntityName: this.snakeEntityName,
-        fields: this.fields,
-        package: this.package,
-      }
-    );
+    this.fs.copyTpl(this.templatePath('service.java.ejs'), this.destinationPath(`${this.destination}/${this.capEntityName}Service.java`), {
+      camelEntityName: this.camelEntityName,
+      capEntityName: this.capEntityName,
+      snakeEntityName: this.snakeEntityName,
+      fields: this.fields,
+      package: this.package,
+    });
   }
 
   _generateServiceImpl() {
@@ -476,17 +467,13 @@ module.exports = class extends Generator {
   }
 
   _generateMapper() {
-    this.fs.copyTpl(
-      this.templatePath('mapper.java.ejs'),
-      this.destinationPath(`${this.destination}/${this.capEntityName}Mapper.java`),
-      {
-        camelEntityName: this.camelEntityName,
-        capEntityName: this.capEntityName,
-        snakeEntityName: this.snakeEntityName,
-        fields: this.fields,
-        package: this.package,
-      }
-    );
+    this.fs.copyTpl(this.templatePath('mapper.java.ejs'), this.destinationPath(`${this.destination}/${this.capEntityName}Mapper.java`), {
+      camelEntityName: this.camelEntityName,
+      capEntityName: this.capEntityName,
+      snakeEntityName: this.snakeEntityName,
+      fields: this.fields,
+      package: this.package,
+    });
   }
 
   _generateController() {
@@ -505,4 +492,22 @@ module.exports = class extends Generator {
     );
   }
 
+  _generateMigration() {
+    const now = new Date();
+    const timestamp = now.toISOString().replace(/[-:TZ.]/g, '');
+
+    this.fs.copyTpl(
+      this.templatePath('migration.sql.ejs'),
+      this.destinationPath(`src/main/resources/db/migration/${timestamp}__add_table_${this.tableName}.sql`),
+      {
+        camelEntityName: this.camelEntityName,
+        camelPluralEntityName: this.camelPluralEntityName,
+        capEntityName: this.capEntityName,
+        snakeEntityName: this.snakeEntityName,
+        fields: this.fields,
+        relations: this.relations,
+        tableName: this.tableName,
+      }
+    );
+  }
 };
