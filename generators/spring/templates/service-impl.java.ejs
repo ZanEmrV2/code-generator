@@ -1,0 +1,61 @@
+package <%= package %>.<%= snakeEntityName %>;
+
+import jakarta.transaction.Transactional;
+import jakarta.validation.ValidationException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import <%= package %>.core.SearchService;
+
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.UUID;
+
+@Service
+@Transactional
+@RequiredArgsConstructor
+public class <%= capEntityName %>ServiceImpl extends SearchService<<%= capEntityName %>> implements <%= capEntityName %>Service {
+
+private final <%= capEntityName %>Repository <%= camelEntityName %>Repository;
+
+private final <%= capEntityName %>Mapper <%= camelEntityName %>Mapper;
+
+@Override
+public <%= capEntityName %>Dto save(<%= capEntityName %>Dto <%= camelEntityName %>Dto) {
+    <%= capEntityName %> <%= camelEntityName %> = <%= camelEntityName %>Mapper.toEntity(<%= camelEntityName %>Dto);
+
+    if (<%= camelEntityName %>Dto.getUuid() != null) {
+    <%= camelEntityName %> = <%= camelEntityName %>Repository.findByUuid(<%= camelEntityName %>Dto.getUuid())
+    .orElseThrow(() -> new ValidationException("<%= camelEntityName %> with uuid"+<%= camelEntityName %>Dto.getUuid()+" not found"));
+    <%= camelEntityName %> = <%= camelEntityName %>Mapper.partialUpdate(<%= camelEntityName %>Dto, <%= camelEntityName %>);
+    } else {
+    <%= camelEntityName %>.setUuid(UUID.randomUUID());
+    }
+    <%= camelEntityName %> = <%= camelEntityName %>Repository.save(<%= camelEntityName %>);
+    return <%= camelEntityName %>Mapper.toDto(<%= camelEntityName %>);
+    }
+
+    @Override
+    public Page<<%= capEntityName %>Dto> findAll(Pageable pageable, Map<String , Object> searchParams) {
+        return <%= camelEntityName %>Repository.findAll(createSpecification(<%= capEntityName %>.class, searchParams), pageable)
+        .map(<%= camelEntityName %>Mapper::toDto);
+    }
+
+    @Override
+     public <%= capEntityName %>Dto findById(UUID uuid) {
+        return <%= camelEntityName %>Repository.findByUuid(uuid)
+        .map(<%= camelEntityName %>Mapper::toDto)
+        .orElseThrow(() -> new ValidationException("Cannot find <%= capEntityName %> item with uuid " + uuid));
+        }
+
+        @Override
+        public void delete(UUID uuid) {
+        try {
+        <%= camelEntityName %>Repository.deleteByUuid(uuid);
+        } catch (Exception e) {
+             throw new ValidationException("Cannot delete menu <%= capEntityName %> with uuid " + uuid);
+        }
+
+        } }

@@ -1,0 +1,62 @@
+package <%= package %>.<%= snakeEntityName %>;
+
+import jakarta.validation.Valid;
+import jakarta.validation.ValidationException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
+
+import <%= package %>.core.AppConstants;
+import <%= package %>.core.CustomApiResponse;
+
+import java.util.Map;
+import java.util.UUID;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping(AppConstants.API_PREFIX + "/<%= resourcePath%>")
+public class <%= capEntityName %>Resource {
+
+    private final <%= capEntityName %>Service <%= camelEntityName %>Service;
+
+    @GetMapping
+    public CustomApiResponse get(Pageable pageable,
+                                 @RequestParam Map<String, Object> searchParams) {
+        return CustomApiResponse.ok(<%= camelEntityName %>Service.findAll(pageable, searchParams));
+    }
+
+    @PostMapping
+    public CustomApiResponse create(@Valid @RequestBody <%= capEntityName %>Dto dto) {
+        if (dto.getUuid() != null || dto.getId() != null) {
+            throw new ValidationException("New <%= capEntityName %> should not have  id or uuid");
+        }
+        return CustomApiResponse.ok(<%= camelEntityName %>Service.save(dto));
+    }
+
+    @PutMapping("/{uuid}")
+    public CustomApiResponse update(@Valid @RequestBody <%= capEntityName %>Dto dto, @PathVariable UUID uuid) {
+        if (dto.getUuid() == null || dto.getId() == null) {
+            throw new ValidationException("Updated <%= capEntityName %> should  have an id and uuid");
+        }
+        if (!uuid.equals(dto.getUuid())) {
+            throw new ValidationException("Uuid mismatch");
+        }
+        return CustomApiResponse.ok(<%= camelEntityName %>Service.save(dto));
+    }
+
+    @GetMapping("/{uuid}")
+    public CustomApiResponse findById(@PathVariable UUID uuid) {
+        return CustomApiResponse.ok(<%= camelEntityName %>Service.findById(uuid));
+    }
+
+    @DeleteMapping("/{uuid}")
+    public CustomApiResponse delete(@PathVariable UUID uuid) {
+        try {
+            <%= camelEntityName %>Service.delete(uuid);
+           return CustomApiResponse.ok("<%= capEntityName %> deleted successfully");
+
+        } catch (Exception e) {
+          throw new ValidationException("Cannot delete <%=capEntityName %> with uuid " + uuid);
+        }
+    }
+}

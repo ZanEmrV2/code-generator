@@ -1,0 +1,49 @@
+package <%=package%>.<%=snakeEntityName%>;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import <%=package%>.core.BaseModel;
+<%_ relations.forEach(function(r){ _%>
+import <%=package%>.<%= r.rlSnake%>.<%=r.rlCap %>;
+<%_ }); _%>
+
+@Getter
+@Setter
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "<%= tableName %>")
+public class <%= capEntityName %> extends BaseModel {
+
+    <%_ fields.forEach(function(f){ _%>
+       <%_ if(!f.relation && f.name != 'id' &&  f.name != 'uuid') { _%>
+            <%_ var type = 'String'; if (f.dbType.includes('increments') || f.dbType.includes('integer')) {
+                type = 'Long'
+            } _%>
+            <%_ if(f.validations !== undefined && f.validations.includes('required')){_%>
+              @NotNull
+            <%_ } _%>
+            private <%= type %> <%= f.name %>;
+      <%_ } _%>
+    <%_ }); _%>
+
+   <%_ relations.forEach(function(r){ _%>
+        <%_ if (r.type === 'mt1') { _%>
+            @NotNull
+            @Column(name = "<%=r.name%>")
+            private Long <%=r.rlCamel%>Id;
+
+            @ManyToOne(fetch = FetchType.LAZY)
+            @JsonIgnoreProperties({"<%=camelPluralEntityName%>"})
+            @JoinColumn(name = "<%=r.name%>", insertable = false, updatable = false)
+            private <%=r.rlCap%> <%=r.rlCamel%>;
+
+        <%_ } _%>
+   <%_ }); _%>
+
+}

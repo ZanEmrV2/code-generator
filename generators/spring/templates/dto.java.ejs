@@ -1,0 +1,49 @@
+package <%=package%>.<%=snakeEntityName%>;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
+
+import java.io.Serializable;
+import java.util.UUID;
+
+import <%=package%>.core.BaseDto;
+
+/**
+ * DTO for {@link <%= capEntityName %>}
+ */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+public class <%= capEntityName %>Dto extends BaseDto {
+    <%_ fields.forEach(function(f){ _%>
+        <%_ if(!f.relation ) { _%>
+            <%_
+                var type = 'String';
+                if (f.dbType.includes('increments')) {
+                  type = 'Long'
+                }
+                if (f.dbType.includes('uuid') || f.dbType.includes('integer')) {
+                  type = 'UUID'
+                }
+            _%>
+            <%_ if(f.validations !== undefined && f.validations.includes('required')){ _%>
+            @NotNull
+            <%_ } _%>
+            private <%= type %> <%= f.name %>;
+        <%_ } _%>
+    <%_ }); _%>
+
+    <%_ relations.forEach(function(r){ _%>
+       <%_ if (r.type === 'mt1') { _%>
+            @NotNull
+            private Long <%=r.rlCamel%>Id;
+
+            private String <%=r.rlCamel%>Name;
+        <%_ } _%>
+    <%_ }); _%>
+}
