@@ -7,54 +7,96 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import <%= package %>.core.SearchService;
+import <%= package %>.core.Utils;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+* Service implementation for managing <%= capPluralEntityName %>. Provides CRUD operations for <%= capPluralEntityName %>
+* This service uses {@link <%= capEntityName %>Repository} for database operations and {@link <%= capEntityName %>Mapper}
+* to convert between entity and DTO objects.
+* <p>
+    * It also extends {@link SearchService} to enable advanced search capabilities for <%= capPluralEntityName %>.
+    */
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class <%= capEntityName %>ServiceImpl extends SearchService<<%= capEntityName %>> implements <%= capEntityName %>Service {
 
-private final <%= capEntityName %>Repository <%= camelEntityName %>Repository;
+    private final <%= capEntityName %>Repository <%= camelEntityName %>Repository;
 
-private final <%= capEntityName %>Mapper <%= camelEntityName %>Mapper;
+    private final <%= capEntityName %>Mapper <%= camelEntityName %>Mapper;
 
-@Override
-public <%= capEntityName %>Dto save(<%= capEntityName %>Dto <%= camelEntityName %>Dto) {
-    <%= capEntityName %> <%= camelEntityName %> = <%= camelEntityName %>Mapper.toEntity(<%= camelEntityName %>Dto);
+    /**
+    * Creates or updates a <%= capEntityName %> based on the presence of a UUID in the DTO.
+    *
+    * @param <%= camelEntityName %>Dto the {@link <%= capEntityName %>Dto} containing <%= capEntityName %> data.
+    * @return the saved {@link <%= capEntityName %>Dto}.
+    * @throws ValidationException if the <%= capEntityName %> is not found for update or there is validation failure.
+    */
+    @Override
+    public <%= capEntityName %>Dto save(<%= capEntityName %>Dto <%= camelEntityName %>Dto) {
 
-    if (<%= camelEntityName %>Dto.getUuid() != null) {
-    <%= camelEntityName %> = <%= camelEntityName %>Repository.findByUuid(<%= camelEntityName %>Dto.getUuid())
-    .orElseThrow(() -> new ValidationException("<%= camelEntityName %> with uuid"+<%= camelEntityName %>Dto.getUuid()+" not found"));
-    <%= camelEntityName %> = <%= camelEntityName %>Mapper.partialUpdate(<%= camelEntityName %>Dto, <%= camelEntityName %>);
-    } else {
-    <%= camelEntityName %>.setUuid(UUID.randomUUID());
-    }
-    <%= camelEntityName %> = <%= camelEntityName %>Repository.save(<%= camelEntityName %>);
-    return <%= camelEntityName %>Mapper.toDto(<%= camelEntityName %>);
-    }
+        // Convert the DTO to an entity object
+        <%= capEntityName %> <%= camelEntityName %> = <%= camelEntityName %>Mapper.toEntity(<%= camelEntityName %>Dto);
 
+        // If the <%= capEntityName %> has a UUID, fetch the existing <%= capEntityName %> and perform an update
+        if (<%= camelEntityName %>Dto.getUuid() != null) {
+                <%= camelEntityName %> = <%= camelEntityName %>Repository.findByUuid(<%= camelEntityName %>Dto.getUuid())
+                .orElseThrow(() -> new ValidationException("<%= camelEntityName %> with uuid"+<%= camelEntityName %>Dto.getUuid()+" not found"));
+            // Partially update the existing <%= capEntityName %> with new data from the DTO
+            <%= camelEntityName %> = <%= camelEntityName %>Mapper.partialUpdate(<%= camelEntityName %>Dto, <%= camelEntityName %>);
+            } else {
+            // Set a new UUID for a new <%= capEntityName %>
+            <%= camelEntityName %>.setUuid(Utils.generateUuid());
+            }
+            // Save the <%= capEntityName %> and return the DTO
+            <%= camelEntityName %> = <%= camelEntityName %>Repository.save(<%= camelEntityName %>);
+            return <%= camelEntityName %>Mapper.toDto(<%= camelEntityName %>);
+        }
+
+    /**
+    * Finds all <%= capPluralEntityName %> based on pagination and search criteria.
+    *
+    * @param pageable the pagination information.
+    * @param searchParams   a map of search criteria.
+    * @return a paginated list of {@link <%= capEntityName %>Dto}.
+    */
     @Override
     public Page<<%= capEntityName %>Dto> findAll(Pageable pageable, Map<String , Object> searchParams) {
         return <%= camelEntityName %>Repository.findAll(createSpecification(<%= capEntityName %>.class, searchParams), pageable)
         .map(<%= camelEntityName %>Mapper::toDto);
     }
 
+            /**
+            * Finds a <%= capEntityName %> by its UUID.
+            *
+            * @param uuid the UUID of the <%= capEntityName %> to find.
+            * @return the {@link <%= capEntityName %>Dto} if found.
+            * @throws ValidationException if the <%= capEntityName %> is not found.
+            */
     @Override
      public <%= capEntityName %>Dto findById(UUID uuid) {
         return <%= camelEntityName %>Repository.findByUuid(uuid)
         .map(<%= camelEntityName %>Mapper::toDto)
-        .orElseThrow(() -> new ValidationException("Cannot find <%= capEntityName %> item with uuid " + uuid));
-        }
+        .orElseThrow(() -> new ValidationException("Cannot find <%= capEntityName %>  with uuid " + uuid));
+     }
 
-        @Override
-        public void delete(UUID uuid) {
+            /**
+            * Deletes a <%= capEntityName %> by its UUID.
+            *
+            * @param uuid the UUID of the <%= capEntityName %> to delete.
+            * @throws ValidationException if the <%= capEntityName %> cannot be deleted.
+            */
+     @Override
+     public void delete(UUID uuid) {
         try {
-        <%= camelEntityName %>Repository.deleteByUuid(uuid);
+           <%= camelEntityName %>Repository.deleteByUuid(uuid);
         } catch (Exception e) {
-             throw new ValidationException("Cannot delete menu <%= capEntityName %> with uuid " + uuid);
+             throw new ValidationException("Cannot delete <%= capEntityName %> with uuid " + uuid);
         }
 
-        } }
+     }
+}

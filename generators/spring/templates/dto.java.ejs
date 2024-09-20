@@ -1,20 +1,18 @@
 package <%=package%>.<%= parentFolder %>.<%=snakeEntityName%>;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
-import java.util.UUID;
-
 import <%=package%>.core.BaseDto;
 
 /**
- * DTO for {@link <%= capEntityName %>}
- */
+* Data Transfer Object (DTO) for the {@link <%= capEntityName %>} entity.
+* This class is used to transfer <%= capEntityName %> data between the client and server.
+* It extends {@link BaseDto}, which provides common fields like id, uuid.
+*/
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,8 +25,20 @@ public class <%= capEntityName %>Dto extends BaseDto {
                 if (f.dbType.includes('increments')) {
                   type = 'Long'
                 }
-                if (f.dbType.includes('uuid') || f.dbType.includes('integer')) {
+                if (f.dbType.includes('uuid')) {
                   type = 'UUID'
+                }
+                if (f.dbType.includes('integer')) {
+                  type = 'Integer'
+                }
+                if (f.dbType.includes('date')) {
+                  type = 'LocalDate'
+                }
+                if (f.dbType.includes('timestamp')) {
+                  type = 'LocalDateTime'
+                }
+                if (f.dbType.includes('decimal')) {
+                  type = 'BigDecimal'
                 }
             _%>
             <%_ if(f.validations !== undefined && f.validations.includes('required')){ _%>

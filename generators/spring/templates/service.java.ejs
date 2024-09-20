@@ -2,6 +2,11 @@ package <%=package%>.<%= parentFolder %>.<%=snakeEntityName%>;
 
 import <%=package%>.core.BaseCrudService;
 
+/**
+* Service interface for managing <%= capPluralEntityName %> in the system.
+* It extends {@link BaseCrudService} to provide common CRUD operations for {@link <%= capEntityName %>} entities
+* and can defines additional functionality to be implemented specific to <%= capEntityName %> management.
+*/
 public interface <%= capEntityName %>Service extends BaseCrudService<<%= capEntityName %>Dto, <%= capEntityName %>> {
 
 }

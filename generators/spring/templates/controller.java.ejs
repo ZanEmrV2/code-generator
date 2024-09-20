@@ -12,6 +12,19 @@ import <%= package %>.core.CustomApiResponse;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+* REST controller that provides endpoints for managing <%=capEntityName%> within the system.
+* This class handles CRUD operations for <%=capPluralEntityName%> and provides an additional APIs  to <%=capEntityName%>.
+* <p>
+    * Endpoints:
+    * - POST /api/<%= resourcePath%>: Create a new <%=capEntityName%>
+    * - PUT /api/<%= resourcePath%>/{uuid}: Update an existing <%=capEntityName%>
+    * - GET /api/<%= resourcePath%>: Fetch all <%= capPluralEntityName %> with optional search and pagination
+    * - GET /api/<%= resourcePath%>/{uuid}: Get an existing <%=capEntityName%> by its UUID
+    * - DELETE /api/<%= resourcePath%>/{uuid}: Delete a <%=capEntityName%> by its UUID
+    * <p>
+    * Uses {@link <%=capEntityName%>Service} to perform business logic.
+    */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(AppConstants.API_PREFIX + "/<%= resourcePath%>")
@@ -19,15 +32,14 @@ public class <%= capEntityName %>Resource {
 
     private final <%= capEntityName %>Service <%= camelEntityName %>Service;
 
-    @GetMapping
-    public CustomApiResponse get(Pageable pageable
-       <%_ relations.forEach(function(r) { _%> <%_ if(allMandatory.indexOf(r.name) !== -1) { _%>
-         ,@RequestParam Long <%=r.rlCamel%>Id
-       <%_ }}) _%>
-        ,@RequestParam Map<String, Object> searchParams) {
-        return CustomApiResponse.ok(<%= camelEntityName %>Service.findAll(pageable, searchParams));
-    }
 
+    /**
+    * Creates a new <%= capEntityName %> in the system.
+    *
+    * @param dto the {@link <%= capEntityName %>Dto} object representing the <%= capEntityName %> data.
+    * @return {@link CustomApiResponse} containing the created <%= capEntityName %>.
+    * @throws ValidationException if the provided <%= capEntityName %> DTO contains an id or uuid (new <%= capEntityName %> should not have an id or uuid).
+    */
     @PostMapping
     public CustomApiResponse create(@Valid @RequestBody <%= capEntityName %>Dto dto) {
         if (dto.getUuid() != null || dto.getId() != null) {
@@ -36,6 +48,14 @@ public class <%= capEntityName %>Resource {
         return CustomApiResponse.ok(<%= camelEntityName %>Service.save(dto));
     }
 
+    /**
+    * Updates an existing <%= capEntityName %>.
+    *
+    * @param dto  the {@link <%= capEntityName %>Dto} object containing updated <%= capEntityName %> data.
+    * @param uuid the UUID of the <%= capEntityName %> to update.
+    * @return {@link CustomApiResponse} containing the updated <%= capEntityName %>.
+    * @throws ValidationException if the provided <%= capEntityName %> DTO does not have an uuid or if the UUIDs do not match.
+    */
     @PutMapping("/{uuid}")
     public CustomApiResponse update(@Valid @RequestBody <%= capEntityName %>Dto dto, @PathVariable UUID uuid) {
         if (dto.getUuid() == null || dto.getId() == null) {
@@ -47,11 +67,42 @@ public class <%= capEntityName %>Resource {
         return CustomApiResponse.ok(<%= camelEntityName %>Service.save(dto));
     }
 
+
+    /**
+    * Retrieves a list of <%= capPluralEntityName %> with pagination and optional search parameters.
+    *
+    * @param pageable the {@link Pageable} object to control pagination.
+    * @param searchParams a map of search parameters (fields names) for filtering <%= capPluralEntityName %>.
+    * @return {@link CustomApiResponse} containing a list of <%= capPluralEntityName %> and pagination information.
+    */
+    @GetMapping
+    public CustomApiResponse get(Pageable pageable
+    <%_ relations.forEach(function(r) { _%> <%_ if(allMandatory.indexOf(r.name) !== -1) { _%>
+       ,@RequestParam Long <%=r.rlCamel%>Id
+     <%_ }}) _%>
+      ,@RequestParam Map<String, Object> searchParams) {
+       return CustomApiResponse.ok(<%= camelEntityName %>Service.findAll(pageable, searchParams));
+    }
+
+    /**
+    * Retrieves a <%= capEntityName %> by its UUID.
+    *
+    * @param uuid the UUID of the <%= capEntityName %> to retrieve.
+    * @return {@link CustomApiResponse} containing the <%= capEntityName %> data.
+    * @throws ValidationException if no <%= capEntityName %> with the given UUID is found.
+    */
     @GetMapping("/{uuid}")
     public CustomApiResponse findById(@PathVariable UUID uuid) {
         return CustomApiResponse.ok(<%= camelEntityName %>Service.findById(uuid));
     }
 
+
+    /**
+    * Deletes a <%= capEntityName %> by its UUID.
+    *
+    * @param uuid the UUID of the <%= capEntityName %> to delete.
+    * @return {@link CustomApiResponse} confirming the successful deletion.
+    */
     @DeleteMapping("/{uuid}")
     public CustomApiResponse delete(@PathVariable UUID uuid) {
         try {

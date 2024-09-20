@@ -12,6 +12,11 @@ import <%=package%>.core.BaseModel;
 import <%=package%>.<%=parentFolder%>.<%= r.rlSnake%>.<%=r.rlCap %>;
 <%_ }); _%>
 
+/**
+* Entity representing a <%= capEntityName %> in the system.
+* This class maps to the '<%= tableName %>' table in the database.
+    * Inherits from {@link BaseModel}, which includes common auditing fields like 'id', uuid, 'createdAt', createdBy etc.
+    */
 @Getter
 @Setter
 @Entity
@@ -22,9 +27,27 @@ public class <%= capEntityName %> extends BaseModel {
 
     <%_ fields.forEach(function(f){ _%>
        <%_ if(!f.relation && f.name != 'id' &&  f.name != 'uuid') { _%>
-            <%_ var type = 'String'; if (f.dbType.includes('increments') || f.dbType.includes('integer')) {
-                type = 'Long'
-            } _%>
+            <%_
+                var type = 'String';
+                if (f.dbType.includes('increments')) {
+                    type = 'Long'
+                }
+                if (f.dbType.includes('uuid')) {
+                    type = 'UUID'
+                }
+                if (f.dbType.includes('integer')) {
+                    type = 'Integer'
+                }
+                if (f.dbType.includes('date')) {
+                    type = 'LocalDate'
+                }
+                if (f.dbType.includes('timestamp')) {
+                    type = 'LocalDateTime'
+                }
+                if (f.dbType.includes('decimal')) {
+                    type = 'BigDecimal'
+                }
+            _%>
             <%_ if(f.validations !== undefined && f.validations.includes('required')){_%>
               @NotNull
             <%_ } _%>

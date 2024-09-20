@@ -2,6 +2,13 @@ package <%=package%>.<%= parentFolder %>.<%=snakeEntityName%>;
 
 import <%=package%>.core.BaseRepository;
 
+/**
+* Repository interface for {@link <%= capEntityName %>} entities.
+* <p>
+    * This interface extends {@link BaseRepository} which provides generic CRUD operations
+    * and additional query methods such as findByUuid, deleteByUuid, getReferenceByUuid.
+    * It is responsible for interacting with the database for {@link <%= capEntityName %>} specific queries and operations.
+    */
 public interface <%= capEntityName %>Repository extends BaseRepository<<%= capEntityName %>, Long> {
 
 }
