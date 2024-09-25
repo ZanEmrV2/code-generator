@@ -48,8 +48,8 @@ export const <%= capEntityName %>Update = ({ <%= camelEntityName %>, onClose, sh
       <form onSubmit={handleSubmit(onSubmit)} className="p-fluid">
        <div className="flex flex-column gap-3 mt-4">
             <%_ fields.forEach(function(f){ _%>
-              <%_ if (f.name != 'id' && f.relation === undefined && f.dbType !== 'enum' && !f.dbType.includes('boolean') && !f.dbType.includes('json')) { _%> 
-                <%_ if (f.dbType.includes('string')) { _%> 
+              <%_ if (f.name != 'id' && f.relation === undefined && f.dataType !== 'enum' && !f.dataType.includes('boolean') && !f.dataType.includes('json')) { _%>
+                <%_ if (f.dataType.includes('string')) { _%>
                     <AppInputText
                       control={control}
                       name="<%=f.camelName %>"
@@ -64,21 +64,21 @@ export const <%= capEntityName %>Update = ({ <%= camelEntityName %>, onClose, sh
                       <%_ } _%>
                     />
                   <%_ } _%>
-                  <%_ if (f.dbType.includes('text')) { _%> 
+                  <%_ if (f.dataType.includes('text')) { _%>
                     <AppTextarea rows={5} id={field.name} {...field} />
                   <%_ } _%>
-                  <%_ if (f.dbType.includes('integer')) { _%> 
+                  <%_ if (f.dataType.includes('integer')) { _%>
                     /**{ not implemented}*/
                   <%_ } _%>
-                  <%_ if (f.dbType.includes('decimal') || f.dbType.includes('double') || f.dbType.includes('float')) { _%> 
+                  <%_ if (f.dataType.includes('decimal') || f.dataType.includes('double') || f.dataType.includes('float')) { _%>
                     /**{ not implemented}*/
                   <%_ } _%>
-                  <%_ if (f.dbType.includes('date')) { _%> 
+                  <%_ if (f.dataType.includes('date')) { _%>
                     /**{ not implemented}*/
                   <%_ } _%>
               <%_ } _%>
               
-              <%_ if (f.name != 'id' && f.relation === undefined && f.dbType !== 'enum' && f.dbType.includes('boolean')) { _%> 
+              <%_ if (f.name != 'id' && f.relation === undefined && f.dataType !== 'enum' && f.dataType.includes('boolean')) { _%>
                 <AppInputSwitch  name="<%=f.camelName %>" control={control} label="<%= f.header %>" />
             <%_ } _%>
             <%_ }); _%>

@@ -1,6 +1,6 @@
 export interface <%= capEntityName %>  {
   <%_ fields.forEach(function(f){ _%>
-    <%_ var type = 'string'; if(f.dbType.includes('increments') || f.dbType.includes('integer')){type = 'number'} _%> 
+    <%_ var type = 'string'; if(f.dataType.includes('increments') || f.dataType.includes('integer')){type = 'number'} _%>
     <%=f.name %>?: <%= type %>;
   <%_ }); _%>
 }
@@ -8,7 +8,7 @@ export interface <%= capEntityName %>  {
 export class <%= capEntityName %> implements I<%= capEntityName %> {
   constructor(
     <%_ fields.forEach(function(f){ _%>
-      <%_ var type = 'string'; if(f.dbType.includes('increments') || f.dbType.includes('integer')){type = 'number'} _%> 
+      <%_ var type = 'string'; if(f.dataType.includes('increments') || f.dataType.includes('integer')){type = 'number'} _%>
       public <%=f.name %>?: <%= type %>,
     <%_ }); _%>
     ) {}

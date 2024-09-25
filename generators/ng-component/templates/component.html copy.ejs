@@ -102,7 +102,7 @@
               <%_ if (f.name != 'id' && f.relation == undefined && f.searchable) { _%> 
                   <div class="p-field" fxFlex>
                     <span class="p-float-label p-input-icon-right">
-                      <%_ if (f.dbType.includes('string')) { _%> 
+                      <%_ if (f.dataType.includes('string')) { _%>
                           <input
                             id="<%= f.name %>"
                             type="text"
@@ -173,7 +173,7 @@
             <%_ if (f.name != 'id' && f.relation == undefined && f.searchable) { _%> 
                 <div class="p-field">
                   <span class="p-float-label p-input-icon-right">
-                    <%_ if (f.dbType.includes('string')) { _%> 
+                    <%_ if (f.dataType.includes('string')) { _%>
                         <input
                           id="<%= f.name %>"
                           type="text"

@@ -5,17 +5,35 @@ uuid              UUID                                    NOT NULL,
 
 <%_ fields.forEach(function(f){ _%>
     <%_ if(f.name != 'id' &&  f.name != 'uuid') { _%>
-        <%_ var type = 'VARCHAR(255)';
-           if (f.dbType.includes('bigint') || f.relation !=null && f.relation.includes('mt1')) {
+
+        <%_
+            var type = 'VARCHAR(255)';
+            if(f.dataType.includes('string') && f.dataType.includes(',')) {
+               const stringMax = f.dataType.split(',')[1];
+                type = 'VARCHAR('+stringMax+')';
+            }
+            if (f.dataType.includes('enum')) {
+                type = 'VARCHAR(100)'
+            }
+           if (f.dataType.includes('bigint') || f.relation !=null && f.relation.includes('mt1')) {
               type = 'BIGINT'
             }
-            if(f.relation ==null && f.dbType.includes('integer')) {
+            if(f.relation ==null && f.dataType.includes('integer')) {
                  type = 'INTEGER'
              }
-            if( f.dbType.includes('numeric')) {
-                type = 'NUMERIC(12,2)'
+            if( f.dataType.includes('numeric') || f.dataType.includes('decimal')) {
+                type = 'NUMERIC(14,2)'
             }
-            if (f.dbType.includes('text')) {
+            if( f.dataType.includes('boolean')) {
+                type = 'BOOLEAN'
+            }
+            if( f.dataType.includes('date')) {
+                type = 'DATE'
+            }
+            if( f.dataType.includes('timestamp')) {
+                type = 'TIMESTAMP'
+            }
+            if (f.dataType.includes('text')) {
                 type = 'TEXT'
             }
         _%>
@@ -24,13 +42,18 @@ uuid              UUID                                    NOT NULL,
 <%_ }); _%>
 
 created_at        TIMESTAMP WITHOUT TIME ZONE,
-created_by        VARCHAR(255),
+created_by        VARCHAR(120),
 updated_at        TIMESTAMP WITHOUT TIME ZONE,
-updated_by        VARCHAR(255),
+updated_by        VARCHAR(120),
 deleted_at        TIMESTAMP WITHOUT TIME ZONE,
-deleted_by        VARCHAR(255),
+deleted_by        VARCHAR(120),
 CONSTRAINT pk_<%=tableName%> PRIMARY KEY (id),
 CONSTRAINT uc_<%=tableName%>_uuid UNIQUE (uuid)
+<%_ fields.forEach(function(f){ _%>
+    <%_ if(f.validations  &&  f.validations.includes("unique")) { _%>
+      ,CONSTRAINT uc_<%=tableName%>_<%=f.name%> UNIQUE (<%=f.name%>)
+<%_ } _%>
+<%_ }); _%>
 
 <%_ relations.forEach(function(r){ _%>
     <%_ if (r.type === 'mt1') { _%>

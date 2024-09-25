@@ -1,5 +1,6 @@
 package <%= package %>.<%= parentFolder %>.<%= snakeEntityName %>;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import <%= package %>.core.SearchService;
 import <%= package %>.core.Utils;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -20,7 +22,9 @@ import java.util.UUID;
 * <p>
     * It also extends {@link SearchService} to enable advanced search capabilities for <%= capPluralEntityName %>.
     */
-@Service
+
+    @Slf4j
+    @Service
 @Transactional
 @RequiredArgsConstructor
 public class <%= capEntityName %>ServiceImpl extends SearchService<<%= capEntityName %>> implements <%= capEntityName %>Service {
@@ -34,7 +38,7 @@ public class <%= capEntityName %>ServiceImpl extends SearchService<<%= capEntity
     *
     * @param <%= camelEntityName %>Dto the {@link <%= capEntityName %>Dto} containing <%= capEntityName %> data.
     * @return the saved {@link <%= capEntityName %>Dto}.
-    * @throws ValidationException if the <%= capEntityName %> is not found for update or there is validation failure.
+    * @throws EntityNotFoundException if the <%= capEntityName %> is not found for update or there is validation failure.
     */
     @Override
     public <%= capEntityName %>Dto save(<%= capEntityName %>Dto <%= camelEntityName %>Dto) {
@@ -45,7 +49,7 @@ public class <%= capEntityName %>ServiceImpl extends SearchService<<%= capEntity
         // If the <%= capEntityName %> has a UUID, fetch the existing <%= capEntityName %> and perform an update
         if (<%= camelEntityName %>Dto.getUuid() != null) {
                 <%= camelEntityName %> = <%= camelEntityName %>Repository.findByUuid(<%= camelEntityName %>Dto.getUuid())
-                .orElseThrow(() -> new ValidationException("<%= camelEntityName %> with uuid"+<%= camelEntityName %>Dto.getUuid()+" not found"));
+                .orElseThrow(() -> new EntityNotFoundException("<%= camelEntityName %> with uuid"+<%= camelEntityName %>Dto.getUuid()+" not found"));
             // Partially update the existing <%= capEntityName %> with new data from the DTO
             <%= camelEntityName %> = <%= camelEntityName %>Mapper.partialUpdate(<%= camelEntityName %>Dto, <%= camelEntityName %>);
             } else {
@@ -81,7 +85,7 @@ public class <%= capEntityName %>ServiceImpl extends SearchService<<%= capEntity
      public <%= capEntityName %>Dto findById(UUID uuid) {
         return <%= camelEntityName %>Repository.findByUuid(uuid)
         .map(<%= camelEntityName %>Mapper::toDto)
-        .orElseThrow(() -> new ValidationException("Cannot find <%= capEntityName %>  with uuid " + uuid));
+        .orElseThrow(() -> new EntityNotFoundException("<%= capEntityName %>  with uuid " + uuid+" not found"));
      }
 
             /**

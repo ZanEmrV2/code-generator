@@ -35,7 +35,7 @@ describe('<%= capEntityName %>Component', () => {
         data: [
         {
         <%_ fields.forEach(function(f){ _%>
-          <%_ if (f.name != 'id' && f.relation === undefined &&  !f.dbType.includes('json')) { _%> 
+          <%_ if (f.name != 'id' && f.relation === undefined &&  !f.dataType.includes('json')) { _%>
             <%=f.camelName %>: 'Test<%=f.camelName %>',
           <%_ } _%>
        <%_ }); _%>
@@ -72,7 +72,7 @@ describe('<%= capEntityName %>Component', () => {
   test('Should Render List', () => {
     render(<<%= capEntityName %>List />);
     <%_ fields.forEach(function(f){ _%>
-      <%_ if (f.name != 'id' && f.relation === undefined &&  !f.dbType.includes('json')) { _%> 
+      <%_ if (f.name != 'id' && f.relation === undefined &&  !f.dataType.includes('json')) { _%>
       const <%=f.camelName %>Element = screen.getByText(/Test<%=f.camelName %>/i);
       expect(<%=f.camelName %>Element).toBeInTheDocument();
       <%_ } _%>

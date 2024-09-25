@@ -1,5 +1,6 @@
 package <%=package%>.<%= parentFolder %>.<%=snakeEntityName%>;
 
+import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,29 +23,46 @@ public class <%= capEntityName %>Dto extends BaseDto {
         <%_ if(!f.relation ) { _%>
             <%_
                 var type = 'String';
-                if (f.dbType.includes('increments')) {
+                var stringMax;
+                var defaultValue;
+                if(f.dataType.includes('string')) {
+                    stringMax = 255;
+                    if(f.dataType.includes(',')) {
+                        stringMax = f.dataType.split(',')[1];
+                    }
+                }
+                if (f.dataType.includes('increments')) {
                   type = 'Long'
                 }
-                if (f.dbType.includes('uuid')) {
+                if (f.dataType.includes('uuid')) {
                   type = 'UUID'
                 }
-                if (f.dbType.includes('integer')) {
+                if (f.dataType.includes('integer')) {
                   type = 'Integer'
                 }
-                if (f.dbType.includes('date')) {
+                if (f.dataType.includes('date')) {
                   type = 'LocalDate'
                 }
-                if (f.dbType.includes('timestamp')) {
+                if (f.dataType.includes('timestamp')) {
                   type = 'LocalDateTime'
                 }
-                if (f.dbType.includes('decimal')) {
+                if (f.dataType.includes('decimal')) {
                   type = 'BigDecimal'
                 }
+                if (f.dataType.includes('boolean')) {
+                    type = 'Boolean'
+                    defaultValue = f.defaultValue && f.defaultValue.includes('false') ? 'Boolean.FALSE' : 'Boolean.TRUE';
+                }
             _%>
-            <%_ if(f.validations !== undefined && f.validations.includes('required')){ _%>
-            @NotNull
+            <%_ if(f.validations !== undefined && f.validations.includes('required')){_%>
+                <%_ if(f.validations.includes('required')){_%>
+                    @NotNull
+                <%_ } _%>
             <%_ } _%>
-            private <%= type %> <%= f.name %>;
+            <%_ if(f.dataType.includes('string') ){ _%>
+            @Size(max=<%=stringMax %>)
+            <%_ } _%>
+            private <%= type %> <%= f.name %> <%_ if(defaultValue){ _%> = <%=defaultValue%> <%_ } _%>;
         <%_ } _%>
     <%_ }); _%>
 

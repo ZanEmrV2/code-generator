@@ -152,15 +152,15 @@ module.exports = class extends Generator {
     } else {
       //remove created, updated fields and timestamp fields
       this.fields = data.filter(f => {
-        return !f.name.includes('created') && !f.name.includes('updated') && f.dbType !== 'timestamp';
+        return !f.name.includes('created') && !f.name.includes('updated') && f.dataType !== 'timestamp';
       });
     }
     //Read foreign or manay to many relationship fields
     this.rawRelations = this.fields.filter(f => f.relation != undefined);
     //Read enumns fields
-    this.rawEnums = this.fields.filter(f => f.dbType === 'enum');
+    this.rawEnums = this.fields.filter(f => f.dataType === 'enum');
     //Read json type fields
-    this.rawJsons = this.fields.filter(f => f.dbType === 'json');
+    this.rawJsons = this.fields.filter(f => f.dataType === 'json');
   }
 
   /**

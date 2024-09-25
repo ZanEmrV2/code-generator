@@ -6,19 +6,19 @@
         <%_ if (f.name != 'id' && f.relation == undefined) { _%> 
                 <div class="p-field p-col-12 p-md-4" fxFlex>
                 <span class="p-float-label">
-                    <%_ if (f.dbType.includes('string')) { _%> 
+                    <%_ if (f.dataType.includes('string')) { _%>
                       <input id="<%= f.name %>" type="text" pInputText formControlName="<%= f.name %>"> 
                     <%_ } _%>
-                    <%_ if (f.dbType.includes('text')) { _%> 
+                    <%_ if (f.dataType.includes('text')) { _%>
                       <textarea id="<%= f.name %>" formControlName="<%= f.name %>" [rows]="5" [cols]="30" pInputTextarea autoResize="autoResize"></textarea>
                     <%_ } _%>
-                    <%_ if (f.dbType.includes('integer')) { _%> 
+                    <%_ if (f.dataType.includes('integer')) { _%>
                       <p-inputNumber id="<%= f.name %>" formControlName="<%= f.name %>"></p-inputNumber>
                     <%_ } _%>
-                    <%_ if (f.dbType.includes('decimal') || f.dbType.includes('double') || f.dbType.includes('float')) { _%> 
+                    <%_ if (f.dataType.includes('decimal') || f.dataType.includes('double') || f.dataType.includes('float')) { _%>
                       <p-inputNumber id="<%= f.name %>" formControlName="<%= f.name %>" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2"></p-inputNumber>
                     <%_ } _%>
-                    <%_ if (f.dbType.includes('date')) { _%> 
+                    <%_ if (f.dataType.includes('date')) { _%>
                       <p-calendar id="<%= f.name %>" formControlName="<%= f.name %>"></p-calendar>
                     <%_ } _%>
                     <%_ if (f.validations !== undefined) { _%>

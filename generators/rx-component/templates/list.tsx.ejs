@@ -27,7 +27,7 @@ export default function <%= capEntityName %>List() {
 
   const columns = [
     <%_ fields.forEach(function(f){ _%>
-      <%_ if (f.name != 'id' && f.relation === undefined &&  !f.dbType.includes('json')) { _%> 
+      <%_ if (f.name != 'id' && f.relation === undefined &&  !f.dataType.includes('json')) { _%>
       { field: '<%=f.camelName%>', header: '<%=f.header%>', <%_ if(f.searchable){ searchable: true } %>},
       <%_ } _%>
 

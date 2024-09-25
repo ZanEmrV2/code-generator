@@ -54,7 +54,7 @@ export class <%= capEntityName %>Component implements OnInit {
       { 
         field: '<%= f.name %>', 
         header:'<%= f.header %>',
-        sort: <%_ if (f.searchable && f.dbType !== 'boolean' && f.dbType !== 'integer' && f.dbType !== 'boolean' && f.dbType !== 'decimal' && f.dbType !== 'double' && f.dbType !== 'float') { _%>
+        sort: <%_ if (f.searchable && f.dataType !== 'boolean' && f.dataType !== 'integer' && f.dataType !== 'boolean' && f.dataType !== 'decimal' && f.dataType !== 'double' && f.dataType !== 'float') { _%>
            <%=true%>
           <%_} else { _%>
             <%=false%>

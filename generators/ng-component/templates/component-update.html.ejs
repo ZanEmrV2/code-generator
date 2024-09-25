@@ -8,22 +8,22 @@
   >
     <div fxLayout="column" fxLayoutGap="1rem">
       <%_ fields.forEach(function(f){ _%>
-        <%_ if (f.name != 'id' && f.relation === undefined && f.dbType !== 'enum' && !f.dbType.includes('boolean') && !f.dbType.includes('json')) { _%> 
+        <%_ if (f.name != 'id' && f.relation === undefined && f.dataType !== 'enum' && !f.dataType.includes('boolean') && !f.dataType.includes('json')) { _%>
                 <div class="p-field p-col-12 p-md-4" fxFlex>
                 <span class="p-float-label">
-                    <%_ if (f.dbType.includes('string')) { _%> 
+                    <%_ if (f.dataType.includes('string')) { _%>
                       <input id="<%= f.name %>" type="text" pInputText formControlName="<%= f.name %>"> 
                     <%_ } _%>
-                    <%_ if (f.dbType.includes('text')) { _%> 
+                    <%_ if (f.dataType.includes('text')) { _%>
                       <textarea id="<%= f.name %>" formControlName="<%= f.name %>" [rows]="5" [cols]="30" pInputTextarea [autoResize]="true"></textarea>
                     <%_ } _%>
-                    <%_ if (f.dbType.includes('integer')) { _%> 
+                    <%_ if (f.dataType.includes('integer')) { _%>
                       <p-inputNumber id="<%= f.name %>" formControlName="<%= f.name %>"></p-inputNumber>
                     <%_ } _%>
-                    <%_ if (f.dbType.includes('decimal') || f.dbType.includes('double') || f.dbType.includes('float')) { _%> 
+                    <%_ if (f.dataType.includes('decimal') || f.dataType.includes('double') || f.dataType.includes('float')) { _%>
                       <p-inputNumber id="<%= f.name %>" formControlName="<%= f.name %>" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2"></p-inputNumber>
                     <%_ } _%>
-                    <%_ if (f.dbType.includes('date')) { _%> 
+                    <%_ if (f.dataType.includes('date')) { _%>
                       <p-calendar dataType="string" appendTo="body" id="<%= f.name %>" formControlName="<%= f.name %>"></p-calendar>
                     <%_ } _%>
                     <label for="<%= f.name %>"><%= f.header %> </label>
@@ -37,7 +37,7 @@
               <%_ } _%>
                 </div>
         <%_ } _%>
-        <%_ if (f.name != 'id' && f.relation === undefined && f.dbType !== 'enum' && f.dbType.includes('boolean')) { _%> 
+        <%_ if (f.name != 'id' && f.relation === undefined && f.dataType !== 'enum' && f.dataType.includes('boolean')) { _%>
           <div fxLayout="row" fxLayoutGap="2px">
           <p-inputSwitch
             id="<%= f.name %>"

@@ -1,13 +1,13 @@
 export class <%= capEntityName %> {
     <%_ fields.forEach(function(f){ _%>
-      <%_ var type = 'string'; if(f.dbType.includes('increments') || f.dbType.includes('integer')){type = 'number | null'} _%> 
+      <%_ var type = 'string'; if(f.dataType.includes('increments') || f.dataType.includes('integer')){type = 'number | null'} _%>
       public <%=f.camelName %>?: <%= type %>;
     <%_ }); _%>
 }
 
 export const <%=camelEntityName%>DefaultValue: Readonly<<%= capEntityName %>> = {
   <%_ fields.forEach(function(f){ _%>
-    <%_ var defaultValue = "''"; if(f.dbType.includes('increments') || f.dbType.includes('integer')){defaultValue = 'null'} _%> 
+    <%_ var defaultValue = "''"; if(f.dataType.includes('increments') || f.dataType.includes('integer')){defaultValue = 'null'} _%>
      <%=f.camelName %>: <%- defaultValue %>,
   <%_ }); _%>
 };
