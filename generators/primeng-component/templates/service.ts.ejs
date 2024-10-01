@@ -1,0 +1,33 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+import { <%= capEntityName %> } from '../model/<%= snakeEntityName %>.model';
+
+@Injectable({ providedIn: 'root' })
+export class <%= capEntityName %>Service {
+  public resourceUrl = 'api/<%= resourcePath %>';
+
+  constructor(protected http: HttpClient) {}
+
+  create(<%= camelEntityName %>: <%= capEntityName %>): Observable<<%= capEntityName %>> {
+    return this.http.post<<%= capEntityName %>>(this.resourceUrl, <%= camelEntityName %>);
+  }
+
+  update(<%= camelEntityName %>: <%= capEntityName %>): Observable<<%= capEntityName %>> {
+    return this.http.put<<%= capEntityName %>>(`${this.resourceUrl}/${<%= camelEntityName %>.id}`, <%= camelEntityName %>);
+  }
+
+  find(id: number): Observable<<%= capEntityName %>> {
+    return this.http.get<<%= capEntityName %>>(`${this.resourceUrl}/${id}`);
+  }
+
+  get(params?: any): Observable<<%= capEntityName %>[]> {
+    return this.http.get<<%= capEntityName %>[]>(this.resourceUrl, { params: params });
+  }
+
+  delete(id: number): Observable<null> {
+    return this.http.delete<null>(`${this.resourceUrl}/${id}`);
+  }
+
+}

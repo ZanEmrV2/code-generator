@@ -1,0 +1,84 @@
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { <%= capEntityName %> } from '../../model/<%= snakeEntityName %>.model';@Component({
+  selector: 'app-<%= snakeEntityName %>-form',
+  templateUrl: './<%= snakeEntityName %>-form.component.html',
+})
+export class <%= capEntityName %>FormComponent implements OnInit, OnDestroy {
+  form!: FormGroup;
+  isSubmitting: boolean = false;
+  action!: string;
+  item!: <%= capEntityName %>;
+  title!: string;
+  /**variable for displaying messages */
+  message: any[] = [];
+
+  constructor(
+    private _fb: FormBuilder,
+    private _ref: DynamicDialogRef,
+    private _config: DynamicDialogConfig
+  ) {
+    this.action = this._config.data.action;
+    this.item = this._config.data.item;
+    this.title = this._config.data.title;
+  }
+  ngOnDestroy(): void {
+    if (this._ref) {
+      this._ref.close();
+    }
+  }
+  ngOnInit(): void {
+    this.form = this.initForm();
+  }
+
+  initForm(): FormGroup {
+    if (this.action === 'Add') {
+      return this._fb.group({
+        <%_ fields.forEach(function(f){ _%>
+            <%=f.name %>: [
+            <%_ if(f.dataType.includes('boolean')) {_%>
+              false,
+            <%_ } else { _%>
+              null, 
+            <%_ } _%>
+            <%_ if (f.validations !== undefined || allMandatory.includes(f.name)) { _%>
+              [
+                <%_  if(f.validations !== null && f.validations.includes('required') || allMandatory.includes(f.name)){_%>Validators.required,<%_}_%> 
+              ]
+              <%_}_%>],
+          <%_ }); _%>
+      });
+    } else {
+      return this._fb.group({
+        id: [this.item.id, Validators.required],
+        uuid: [this.item.uuid, Validators.required],
+        <%_ fields.forEach(function(f){ _%>
+            <%=f.name %>: [this.item.<%=f.name %>,
+            <%_ if (f.validations !== undefined || allMandatory.includes(f.name)) { _%>
+              [
+                <%_  if(f.validations !== null && f.validations.includes('required') || allMandatory.includes(f.name)){_%>Validators.required,<%_}_%> 
+              ]
+              <%_}_%>],
+          <%_ }); _%>
+      });
+    }
+  }
+
+  close() {
+    this._ref.close();
+  }
+
+  save(data: <%= capEntityName %>) {
+    this.isSubmitting = true;
+    if (data?.id != null) {
+      //update data
+    } else {
+      //save data
+    }
+    this.message?.push({
+      severity: 'error',
+      detail: 'Server is not available',
+    });
+  }
+}

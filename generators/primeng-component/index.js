@@ -80,12 +80,19 @@ module.exports = class extends Generator {
     await this._getEntityName();
     await this._getParentFolderName();
     await this._getFields();
+    /** /
+     * ignore for now
     if (this.rawRelations.length) {
       await this._getMandator();
     }
+    /* */
+    /** 
+     * ignore for now
+ 
     if (this.rawEnums.length) {
-      await this._getMandatoEnums();
+      await this._getMandatoryEnums();
     }
+    /**/
   }
 
   async _getEntityName() {
@@ -127,8 +134,8 @@ module.exports = class extends Generator {
         message: 'Select which module this entity belongs to? ',
         choices: [
           {
-            name: 'components',
-            value: 'components',
+            name: 'configuration',
+            value: 'configuration',
           },
         ],
       },
@@ -188,7 +195,7 @@ module.exports = class extends Generator {
   /**
    * Get mandatory filters from enums fields
    */
-  async _getMandatoEnums() {
+  async _getMandatoryEnums() {
     const choices = this.rawEnums.map(r => {
       return {
         name: r.name,
@@ -211,15 +218,12 @@ module.exports = class extends Generator {
    */
   writing() {
     this._init();
-    this._generateModule();
-    this._generateRouteModule();
     this._generateModel();
     this._generateService();
     this._generateComponent();
     this._generateComponentUpdate();
-    this._updateRoute();
-    this._updateMenu();
-    this._updateEnums();
+    this._importComponent();
+    this._addComponent();
   }
 
   _init() {
@@ -383,7 +387,7 @@ module.exports = class extends Generator {
       //create json field plural camel case for json collection variable name
       const jCamelPlural = pluralize(jCamel);
 
-      // if this json columns is manadatory fields
+      // if this json columns is mandatory fields
       const mandatory = this.mandatoryEnums.indexOf(j.name) !== 1;
 
       return {
@@ -430,7 +434,7 @@ module.exports = class extends Generator {
      */
     this.fs.copyTpl(
       this.templatePath('model.ts.ejs'),
-      this.destinationPath(`src/app/${this.parentFolder}/${this.snakeEntityName}/${this.snakeEntityName}.model.ts`),
+      this.destinationPath(`src/app/${this.parentFolder}/${this.snakeEntityName}/model/${this.snakeEntityName}.model.ts`),
       { capEntityName: this.capEntityName, snakeEntityName: this.snakeEntityName, fields: this.fields }
     );
   }
@@ -438,7 +442,7 @@ module.exports = class extends Generator {
   _generateService() {
     this.fs.copyTpl(
       this.templatePath('service.ts.ejs'),
-      this.destinationPath(`src/app/${this.parentFolder}/${this.snakeEntityName}/${this.snakeEntityName}.service.ts`),
+      this.destinationPath(`src/app/${this.parentFolder}/${this.snakeEntityName}/service/${this.snakeEntityName}.service.ts`),
       {
         capEntityName: this.capEntityName,
         snakeEntityName: this.snakeEntityName,
@@ -492,8 +496,10 @@ module.exports = class extends Generator {
 
   _generateComponentUpdate() {
     this.fs.copyTpl(
-      this.templatePath('component-update.ts.ejs'),
-      this.destinationPath(`src/app/${this.parentFolder}/${this.snakeEntityName}/update/${this.snakeEntityName}-update.component.ts`),
+      this.templatePath('component-form.ts.ejs'),
+      this.destinationPath(
+        `src/app/${this.parentFolder}/${this.snakeEntityName}/views/${this.snakeEntityName}-form/${this.snakeEntityName}-form.component.ts`
+      ),
       {
         capEntityName: this.capEntityName,
         snakeEntityName: this.snakeEntityName,
@@ -511,8 +517,10 @@ module.exports = class extends Generator {
       }
     );
     this.fs.copyTpl(
-      this.templatePath('component-update.html.ejs'),
-      this.destinationPath(`src/app/${this.parentFolder}/${this.snakeEntityName}/update/${this.snakeEntityName}-update.component.html`),
+      this.templatePath('component-form.html.ejs'),
+      this.destinationPath(
+        `src/app/${this.parentFolder}/${this.snakeEntityName}/views/${this.snakeEntityName}-form/${this.snakeEntityName}-form.component.html`
+      ),
       {
         capEntityName: this.capEntityName,
         snakeEntityName: this.snakeEntityName,
@@ -531,54 +539,33 @@ module.exports = class extends Generator {
     );
   }
 
-  async _updateRoute() {
-    const path = this.destinationPath('src/app/layout/layout-routing.module.ts');
+  _addComponent() {
+    const path = `src/app/${this.parentFolder}/${this.parentFolder}.module.ts`;
     let file = this.fs.read(path);
-    const hook = '/**====Planrep router Generator Hook: Dont Delete====*/';
-    const route = `{
-      path: '${this.snakeEntityName}',
-      loadChildren: () =>
-        import('../${this.parentFolder}/${this.snakeEntityName}/${this.snakeEntityName}.module').then(
-          (m) => m.${this.capEntityName}Module
-        ),
-    },\n`;
-    if (!file.includes('"' + this.snakeEntityName + '"')) {
-      const insert = route + hook;
+    const hook = '/** Zan EMR add component to this module */';
+    const comp = `${this.capEntityName}Component,
+                  ${this.capEntityName}FormComponent,`;
+
+    if (!file.includes('"' + comp + '"')) {
+      const insert = `${comp}\n${hook}`;
       this.fs.write(path, file.replace(hook, insert));
     } else {
-      this.log('Route exist, skipping');
+      this.log('Component existing!');
     }
   }
 
-  async _updateMenu() {
-    const path = this.destinationPath('src/app/layout/main/main.component.ts');
+  _importComponent() {
+    const path = `src/app/${this.parentFolder}/${this.parentFolder}.module.ts`;
     let file = this.fs.read(path);
-    const hook = `/**====Planrep ${this.parentFolder} Menu Generator Hook: Dont Delete====*/`;
-    const menuItem = `{
-      label: '${this.entityNamePlural}',
-      icon: 'pi pi-fw pi-arrow-right',
-      routerLink: '${this.snakeEntityName}',
-    },\n`;
-    if (!file.includes('"' + this.snakeEntityName + '"')) {
-      const insert = menuItem + hook;
-      this.fs.write(path, file.replace(hook, insert));
+    const comp = `${this.capEntityName}Component`;
+    const iHook = '/** Zan EMR import component to this module **/';
+    const iComp = `import { ${comp} } from './${this.snakeEntityName}/${this.snakeEntityName}.component';
+                   import { ${this.capEntityName}FormComponent } from './${this.snakeEntityName}/views/${this.snakeEntityName}-form/${this.snakeEntityName}-form.component';`;
+    if (!file.includes('"' + iComp + '"')) {
+      const imp = `${iComp}\n${iHook}`;
+      this.fs.write(path, file.replace(iHook, imp));
     } else {
-      this.log('Menu exist, skipping');
+      this.log('Component existing!');
     }
-  }
-
-  async _updateEnums() {
-    const path = this.destinationPath('src/app/shared/enum.service.ts');
-    let file = this.fs.read(path);
-    const hook = `/**====Planrep Enum Generator Hook: Dont Delete====*/`;
-    let insert = '';
-    this.enums.forEach(e => {
-      const enums = `${e.eCamelPlural}: [],\n`;
-      if (!file.includes(e.eCamelPlural)) {
-        insert = insert + enums;
-      }
-    });
-    insert = insert + hook;
-    this.fs.write(path, file.replace(hook, insert));
   }
 };

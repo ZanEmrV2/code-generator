@@ -1,0 +1,25 @@
+<p-card header="<%= entityNamePlural %>">
+    <div class="flex justify-content-between align-items-center mb-2 p-0">
+      <app-search-table
+        [filters]="filters"
+        (onInput)="search($event)"
+      ></app-search-table>
+      <app-button
+        severity="primary"
+        label="New"
+        icon="pi pi-plus"
+        (click)="addNew()"
+      ></app-button>
+    </div>
+    <app-table
+      [columns]="columns"
+      [data]="items"
+      [actions]="actions"
+      (onPageChange)="pageChange($event)"
+      [totalRecords]="totalRecords"
+      [first]="first"
+      [last]="last"
+      [rows]="params.pageSize"
+    ></app-table>
+  </p-card>
+  

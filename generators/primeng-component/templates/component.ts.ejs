@@ -1,0 +1,132 @@
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { <%= capEntityName %> } from './model/<%= snakeEntityName %>.model';
+import { SearchData } from '../../shared/components/search-table/model/search-table.model';
+import { <%= capEntityName %>Service } from './service/<%= snakeEntityName %>.service';
+import { RowDataService } from '../../shared/services/row-data.service';
+import { AppDialogService } from '../../shared/services/app-dialog.service';
+import { Subscription } from 'rxjs';
+
+@Component({
+    selector: 'app-<%= snakeEntityName %>',
+    templateUrl: './<%= snakeEntityName %>.component.html',
+})
+export class <%= capEntityName %>Component implements OnInit, OnDestroy {
+  items: <%= capEntityName %>[] = [];
+  filters = [
+  <%_ fields.forEach(function(f){ _%>
+    <%_ if (f.name != 'id' && f.searchable) { _%> 
+      { 
+        name: '<%= f.name %>', 
+        label:'<%= f.label %>',
+      },
+    <%_ } _%>
+  <%_ }); _%>
+  ];
+  columns = [
+  <%_ fields.forEach(function(f){ _%>
+    <%_ if (f.name != 'id' && allMandatory.indexOf(f.name) === -1) { _%> 
+      { 
+        name: '<%= f.name %>', 
+        label:'<%= f.label %>',
+        sort: <%_ if (f.searchable && f.dataType !== 'boolean' && f.dataType !== 'integer' && f.dataType !== 'boolean' && f.dataType !== 'decimal' && f.dataType !== 'double' && f.dataType !== 'float') { _%>
+           <%=true%>
+          <%_} else { _%>
+            <%=false%>
+         <%_ } _%>  
+      },
+    <%_ } _%>
+  <%_ }); _%>
+  ];
+  actions = [
+    {
+      label: 'Update',
+      command: () => this.update(),
+    },
+    {
+      label: 'Delete',
+      command: () => this.delete(),
+    },
+  ];
+  subscription!: Subscription;
+  //pagination
+  params = { pageNo: 0, pageSize: 1 };
+  totalRecords: number = 0;
+  first: number = 0;
+  last: number = 0;
+
+  constructor(
+    private _service: <%= capEntityName %>Service,
+    private _rowDataSvc: RowDataService,
+    private _dialogSvc: AppDialogService
+  ) {
+    //add logic here
+  }
+
+  ngOnInit(): void {}
+
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.unsubscribe();
+    }
+  }
+
+  get<%= camelEntityName %>() {
+    //add logic here
+    //update pagination
+    this.first = this.params.pageNo * this.params.pageSize;
+    this.last = this.first + this.params.pageSize;
+    this.totalRecords = 10; //update total records
+  }
+  pageChange(event: any) {
+    this.params.pageNo = event.first! / event.rows!;
+    this.params.pageSize = event.rows;
+    this.get<%= camelEntityName %>();
+  }
+
+  unsubscribe() {
+    this.subscription.unsubscribe();
+  }
+
+  addNew(): void {
+    const data = { action: 'Add', item: null };
+    /** Open form dialog */
+    /**
+    this._dialogSvc
+      .open('Add New <%= entityName %>', 'sm', <%= camelEntityName %>FormComponent, data)
+      .subscribe((result) => {
+        if (result) {
+          //add logic
+        }
+      });
+    **/
+    /** end */
+  }
+
+  search(search: SearchData): void {}
+
+  update(): void {}
+
+  delete(): void {
+    this.subscription = this._rowDataSvc.currentRowData.subscribe(
+      (value: any) => {
+        if (value) {
+          const message = `Are you sure you want to delete this item`;
+          this._dialogSvc.confirm(message).subscribe({
+            next: (result) => {
+              if (result) {
+                // Add your deletion logic here
+                // ...
+              }
+            },
+            complete: () => {
+              // Unsubscribe when the confirmation dialog is closed
+              if (this.subscription) {
+                this.subscription.unsubscribe();
+              }
+            },
+          });
+        }
+      }
+    );
+  }
+}

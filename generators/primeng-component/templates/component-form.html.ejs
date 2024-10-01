@@ -1,0 +1,27 @@
+<app-form-header [title]="title"></app-form-header>
+<form [formGroup]="form">
+  <div class="grid">
+<!--display error message when form is invalid-->
+</div>
+</form>
+
+<!--display error message when form is invalid-->
+<div *ngIf="message && message.length > 0">
+  <app-message [message]="message"></app-message>
+</div>
+
+<div class="flex justify-content-end">
+  <app-button
+    label="Cancel"
+    severity="danger"
+    (click)="close()"
+    [outline]="true"
+    styleClass="mr-3"
+    [text]="true"
+  ></app-button>
+  <app-button
+    [disabled]="form.invalid || isSubmitting"
+    label="Submit"
+    (click)="save(form.value)"
+  ></app-button>
+</div>
