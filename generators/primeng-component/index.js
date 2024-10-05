@@ -457,6 +457,7 @@ module.exports = class extends Generator {
         camelEntityName: this.camelEntityName,
         resourcePath: this.resourcePath,
         entityNamePlural: this.entityNamePlural,
+        parentFolder: this.parentFolder,
       }
     );
   }

@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environment/environment';
 
 import { <%= capEntityName %> } from '../model/<%= snakeEntityName %>.model';
 
 @Injectable({ providedIn: 'root' })
 export class <%= capEntityName %>Service {
-  public resourceUrl = 'api/<%= resourcePath %>';
+  private resourceUrl: string = `/services/${environment.services.<%= parentFolder %>}/api/<%= resourcePath %>`;
+
 
   constructor(protected http: HttpClient) {}
 
