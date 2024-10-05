@@ -2,7 +2,6 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { <%= capEntityName %> } from './model/<%= snakeEntityName %>.model';
 import { SearchData } from '../../shared/components/search-table/model/search-table.model';
 import { <%= capEntityName %>Service } from './service/<%= snakeEntityName %>.service';
-import { RowDataService } from '../../shared/services/row-data.service';
 import { AppDialogService } from '../../shared/services/app-dialog.service';
 import { Subscription } from 'rxjs';
 
@@ -48,6 +47,7 @@ export class <%= capEntityName %>Component implements OnInit, OnDestroy {
     },
   ];
   subscription!: Subscription;
+  rowSelected: any;
   //pagination
   params = { pageNo: 0, pageSize: 1 };
   totalRecords: number = 0;
@@ -56,7 +56,6 @@ export class <%= capEntityName %>Component implements OnInit, OnDestroy {
 
   constructor(
     private _service: <%= capEntityName %>Service,
-    private _rowDataSvc: RowDataService,
     private _dialogSvc: AppDialogService
   ) {
     //add logic here
@@ -65,68 +64,102 @@ export class <%= capEntityName %>Component implements OnInit, OnDestroy {
   ngOnInit(): void {}
 
   ngOnDestroy(): void {
-    if (this.subscription) {
-      this.unsubscribe();
-    }
+    this.unsubscribe();
   }
 
   get<%= camelEntityName %>() {
-    //add logic here
-    //update pagination
-    this.first = this.params.pageNo * this.params.pageSize;
-    this.last = this.first + this.params.pageSize;
-    this.totalRecords = 10; //update total records
+    this.subscription = this._service.get(params).subscribe({
+      next: (result) => {
+        if (result.status == 200) {
+          this.items = result.data;
+          this.first = result.page;
+          this.last = result.page + 1;
+          this.totalRecords = result.total;
+        }
+      },
+      complete: () => {
+        this.unsubscribe();
+      },
+    });
   }
+
   pageChange(event: any) {
     this.params.pageNo = event.first! / event.rows!;
     this.params.pageSize = event.rows;
-    this.get<%= camelEntityName %>();
+    this.get<%= camelEntityName %>(this.params);
   }
 
   unsubscribe() {
-    this.subscription.unsubscribe();
+    if(this.subscription){
+      this.subscription.unsubscribe();
+    }
   }
 
   addNew(): void {
     const data = { action: 'Add', item: null };
     /** Open form dialog */
-    /**
-    this._dialogSvc
-      .open('Add New <%= entityName %>', 'sm', <%= camelEntityName %>FormComponent, data)
-      .subscribe((result) => {
-        if (result) {
-          //add logic
-        }
+    this.subscription = this._dialogSvc
+      .open('Add <%= entityName %>', 'sm', <%= camelEntityName %>FormComponent, data)
+      .subscribe({
+        next: (result) => {
+          if (result && result.success) {
+            this._dialogSvc.success(result.message);
+            this.get(this.params);
+          }
+        },
+        complete: () => {
+          this.unsubscribe();
+        },
       });
-    **/
     /** end */
   }
 
-  search(search: SearchData): void {}
+  search(search: SearchData): void {
+    if (search.value != null && search.value.length > 3) {
+      this.get({ ...this.params, [search.key]: search.value });
+    } else if (search.value == '') {
+      this.get(this.params);
+    }
+  }
 
-  update(): void {}
+  update(): void {
+    const data = { action: 'Update', item: this.rowSelected };
+    this.subscription = this._dialogSvc
+      .open('Update <%= entityName %>', 'sm', <%= camelEntityName %>FormComponent, data)
+      .subscribe({
+        next: (result) => {
+          if (result && result.success) {
+            this._dialogSvc.success(result.message);
+            this.get(this.params);
+          }
+        },
+        complete: () => {
+          this.unsubscribe();
+        },
+      });
+  }
 
   delete(): void {
-    this.subscription = this._rowDataSvc.currentRowData.subscribe(
-      (value: any) => {
-        if (value) {
-          const message = `Are you sure you want to delete this item`;
-          this._dialogSvc.confirm(message).subscribe({
-            next: (result) => {
-              if (result) {
-                // Add your deletion logic here
-                // ...
-              }
-            },
-            complete: () => {
-              // Unsubscribe when the confirmation dialog is closed
-              if (this.subscription) {
-                this.subscription.unsubscribe();
-              }
-            },
+    const message = `Are you sure you want to delete this item?`;
+    this.subscription = this._dialogSvc.confirm(message).subscribe({
+      next: (result) => {
+        if (result) {
+          this._service.delete(this.rowSelected.uuid).subscribe((result) => {
+            if (result.status == 200) {
+              this._dialogSvc.success(result.message);
+              this.get(this.params);
+            }
           });
         }
-      }
-    );
+      },
+      complete: () => {
+        // Unsubscribe when the confirmation dialog is closed
+        this.unsubscribe();
+      },
+    });
+  }
+
+  handRowSelect(event: any) {
+    this.rowSelected = event; //save selected row from the table
   }
 }

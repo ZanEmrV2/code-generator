@@ -71,14 +71,32 @@ export class <%= capEntityName %>FormComponent implements OnInit, OnDestroy {
 
   save(data: <%= capEntityName %>) {
     this.isSubmitting = true;
-    if (data?.id != null) {
-      //update data
-    } else {
-      //save data
-    }
-    this.message?.push({
-      severity: 'error',
-      detail: 'Server is not available',
+    const request$ = data.id
+      ? this._service.update(data)
+      : this._service.create(data);
+
+    request$.pipe(finalize(() => (this.isSubmitting = false))).subscribe({
+      next: (result) => {
+        if (result.status === 200) {
+          this.handleSuccess(result.message);
+        } else {
+          this.handleError(result.message);
+        }
+      },
+      error: (error) => {
+        const errorMessage = data.id
+          ? 'Error updating <%= entityName %>'
+          : 'Error creating <%= entityName %>';
+        this.handleError(errorMessage);
+      },
     });
+  }
+
+  handleSuccess(message: string) {
+    this._ref.close({ message, success: true });
+  }
+
+  handleError(message: string) {
+    this.message?.push({ severity: 'error', detail: message });
   }
 }
