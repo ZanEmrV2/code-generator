@@ -21,7 +21,8 @@ export class <%= capEntityName %>FormComponent implements OnInit, OnDestroy {
   constructor(
     private _fb: FormBuilder,
     private _ref: DynamicDialogRef,
-    private _config: DynamicDialogConfig
+    private _config: DynamicDialogConfig,
+    private _service: <%= capEntityName %>Service
   ) {
     this.action = this._config.data.action;
     this.item = this._config.data.item;
