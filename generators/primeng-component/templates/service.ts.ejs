@@ -10,24 +10,24 @@ export class <%= capEntityName %>Service {
 
   constructor(protected http: HttpClient) {}
 
-  create(<%= camelEntityName %>: <%= capEntityName %>): Observable<<%= capEntityName %>> {
-    return this.http.post<<%= capEntityName %>>(this.resourceUrl, <%= camelEntityName %>);
+  create(<%= camelEntityName %>: <%= capEntityName %>): Observable<any> {
+    return this.http.post<any>(this.resourceUrl, <%= camelEntityName %>);
   }
 
-  update(<%= camelEntityName %>: <%= capEntityName %>): Observable<<%= capEntityName %>> {
-    return this.http.put<<%= capEntityName %>>(`${this.resourceUrl}/${<%= camelEntityName %>.id}`, <%= camelEntityName %>);
+  update(<%= camelEntityName %>: <%= capEntityName %>): Observable<any> {
+    return this.http.put(`${this.resourceUrl}/${<%= camelEntityName %>.id}`, <%= camelEntityName %>);
   }
 
-  find(id: number): Observable<<%= capEntityName %>> {
-    return this.http.get<<%= capEntityName %>>(`${this.resourceUrl}/${id}`);
+  find(id: number): Observable<any> {
+    return this.http.get(`${this.resourceUrl}/${id}`);
   }
 
-  get(params?: any): Observable<<%= capEntityName %>[]> {
-    return this.http.get<<%= capEntityName %>[]>(this.resourceUrl, { params: params });
+  get(params?: any): Observable<any> {
+    return this.http.get(this.resourceUrl, { params: params });
   }
 
-  delete(id: number): Observable<null> {
-    return this.http.delete<null>(`${this.resourceUrl}/${id}`);
+  delete(id: number): Observable<any> {
+    return this.http.delete(`${this.resourceUrl}/${id}`);
   }
 
 }

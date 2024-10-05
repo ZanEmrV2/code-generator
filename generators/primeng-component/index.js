@@ -137,6 +137,14 @@ module.exports = class extends Generator {
             name: 'configuration',
             value: 'configuration',
           },
+          {
+            name: 'user-management',
+            value: 'user-management',
+          },
+          {
+            name: 'client-registration',
+            value: 'client-registration',
+          },
         ],
       },
     ]);

@@ -3,6 +3,6 @@ export interface <%= capEntityName %> {
     uuid?: string;
   <%_ fields.forEach(function(f){ _%>
     <%_ var type = 'string'; if(f.dataType.includes('increments') || f.dataType.includes('integer')){type = 'number'} _%>
-    <%=f.name %>?: <%= type %>;
+    <%=f.name %>: <%= type %>;
   <%_ }); _%>
 }

@@ -1,7 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { <%= capEntityName %> } from '../../model/<%= snakeEntityName %>.model';@Component({
+import { <%= capEntityName %> } from '../../model/<%= snakeEntityName %>.model';
+import { <%= capEntityName %>Service } from '../../service/<%= snakeEntityName %>.service';
+import { finalize } from 'rxjs';
+
+@Component({
   selector: 'app-<%= snakeEntityName %>-form',
   templateUrl: './<%= snakeEntityName %>-form.component.html',
 })

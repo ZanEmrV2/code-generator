@@ -4,6 +4,8 @@ import { SearchData } from '../../shared/components/search-table/model/search-ta
 import { <%= capEntityName %>Service } from './service/<%= snakeEntityName %>.service';
 import { AppDialogService } from '../../shared/services/app-dialog.service';
 import { Subscription } from 'rxjs';
+import { <%= capEntityName %>FormComponent } from './views/<%= snakeEntityName %>-form/<%= snakeEntityName %>-form.component';
+
 
 @Component({
     selector: 'app-<%= snakeEntityName %>',
@@ -67,7 +69,7 @@ export class <%= capEntityName %>Component implements OnInit, OnDestroy {
     this.unsubscribe();
   }
 
-  get<%= camelEntityName %>() {
+  get<%= capEntityName %>(params: any) {
     this.subscription = this._service.get(params).subscribe({
       next: (result) => {
         if (result.status == 200) {
@@ -86,7 +88,7 @@ export class <%= capEntityName %>Component implements OnInit, OnDestroy {
   pageChange(event: any) {
     this.params.pageNo = event.first! / event.rows!;
     this.params.pageSize = event.rows;
-    this.get<%= camelEntityName %>(this.params);
+    this.get<%= capEntityName %>(this.params);
   }
 
   unsubscribe() {
@@ -99,12 +101,12 @@ export class <%= capEntityName %>Component implements OnInit, OnDestroy {
     const data = { action: 'Add', item: null };
     /** Open form dialog */
     this.subscription = this._dialogSvc
-      .open('Add <%= entityName %>', 'sm', <%= camelEntityName %>FormComponent, data)
+      .open('Add <%= entityName %>', 'md', <%= capEntityName %>FormComponent, data)
       .subscribe({
         next: (result) => {
           if (result && result.success) {
             this._dialogSvc.success(result.message);
-            this.get(this.params);
+            this.get<%= capEntityName %>(this.params);
           }
         },
         complete: () => {
@@ -116,21 +118,21 @@ export class <%= capEntityName %>Component implements OnInit, OnDestroy {
 
   search(search: SearchData): void {
     if (search.value != null && search.value.length > 3) {
-      this.get({ ...this.params, [search.key]: search.value });
+      this.get<%= capEntityName %>({ ...this.params, [search.key]: search.value });
     } else if (search.value == '') {
-      this.get(this.params);
+      this.get<%= capEntityName %>(this.params);
     }
   }
 
   update(): void {
     const data = { action: 'Update', item: this.rowSelected };
     this.subscription = this._dialogSvc
-      .open('Update <%= entityName %>', 'sm', <%= camelEntityName %>FormComponent, data)
+      .open('Update <%= entityName %>', 'md', <%= capEntityName %>FormComponent, data)
       .subscribe({
         next: (result) => {
           if (result && result.success) {
             this._dialogSvc.success(result.message);
-            this.get(this.params);
+            this.get<%= capEntityName %>(this.params);
           }
         },
         complete: () => {
@@ -147,7 +149,7 @@ export class <%= capEntityName %>Component implements OnInit, OnDestroy {
           this._service.delete(this.rowSelected.uuid).subscribe((result) => {
             if (result.status == 200) {
               this._dialogSvc.success(result.message);
-              this.get(this.params);
+              this.get<%= capEntityName %>(this.params);
             }
           });
         }
