@@ -7,7 +7,7 @@ import { <%= capEntityName %> } from '../model/<%= snakeEntityName %>.model';
 
 @Injectable({ providedIn: 'root' })
 export class <%= capEntityName %>Service {
-  private resourceUrl: string = `/services/${environment.services.<%= parentFolder %>}/api/<%= resourcePath %>`;
+  private resourceUrl: string = `/services/${environment.services.serviceName}/api/<%= resourcePath %>`;
 
 
   constructor(protected http: HttpClient) {}
@@ -17,7 +17,7 @@ export class <%= capEntityName %>Service {
   }
 
   update(<%= camelEntityName %>: <%= capEntityName %>): Observable<any> {
-    return this.http.put(`${this.resourceUrl}/${<%= camelEntityName %>.id}`, <%= camelEntityName %>);
+    return this.http.put(`${this.resourceUrl}/${<%= camelEntityName %>.uuid}`, <%= camelEntityName %>);
   }
 
   find(id: number): Observable<any> {

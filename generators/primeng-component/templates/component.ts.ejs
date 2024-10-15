@@ -29,6 +29,7 @@ export class <%= capEntityName %>Component implements OnInit, OnDestroy {
       { 
         name: '<%= f.name %>', 
         label:'<%= f.label %>',
+        useTag: false,
         sort: <%_ if (f.searchable && f.dataType !== 'boolean' && f.dataType !== 'integer' && f.dataType !== 'boolean' && f.dataType !== 'decimal' && f.dataType !== 'double' && f.dataType !== 'float') { _%>
            <%=true%>
           <%_} else { _%>
@@ -51,7 +52,7 @@ export class <%= capEntityName %>Component implements OnInit, OnDestroy {
   subscription!: Subscription;
   rowSelected: any;
   //pagination
-  params = { pageNo: 0, pageSize: 1 };
+  params = { page: 0, size: 10 };
   totalRecords: number = 0;
   first: number = 0;
   last: number = 0;
@@ -86,8 +87,8 @@ export class <%= capEntityName %>Component implements OnInit, OnDestroy {
   }
 
   pageChange(event: any) {
-    this.params.pageNo = event.first! / event.rows!;
-    this.params.pageSize = event.rows;
+    this.params.page = event.first! / event.rows!;
+    this.params.size = event.rows;
     this.get<%= capEntityName %>(this.params);
   }
 

@@ -76,7 +76,7 @@ export class <%= capEntityName %>FormComponent implements OnInit, OnDestroy {
 
   save(data: <%= capEntityName %>) {
     this.isSubmitting = true;
-    const request$ = data.id
+    const request$ = data.uuid
       ? this._service.update(data)
       : this._service.create(data);
 
