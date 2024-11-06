@@ -14,7 +14,7 @@
   <app-button
     label="Cancel"
     severity="danger"
-    (click)="close()"
+    (onClick)="close()"
     [outline]="true"
     styleClass="mr-3"
     [text]="true"
@@ -22,6 +22,6 @@
   <app-button
     [disabled]="form.invalid || isSubmitting"
     label="Submit"
-    (click)="save(form.value)"
+    (onClick)="save(form.value)"
   ></app-button>
 </div>
