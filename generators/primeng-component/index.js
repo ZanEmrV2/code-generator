@@ -149,6 +149,10 @@ module.exports = class extends Generator {
             name: 'clinical',
             value: 'clinical',
           },
+          {
+            name: 'pharmacy',
+            value: 'pharmacy',
+          },
         ],
       },
     ]);
