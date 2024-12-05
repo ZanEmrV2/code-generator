@@ -150,8 +150,8 @@ module.exports = class extends Generator {
             value: 'clinical',
           },
           {
-            name: 'pharmacy',
-            value: 'pharmacy',
+            name: 'program',
+            value: 'program',
           },
         ],
       },
